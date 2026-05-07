@@ -1,0 +1,1247 @@
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: atext = "Кумитэ";
+				case 9: atext = "Сайко - Комон";
+				case 8: atext = "Оядзи";
+				case 7: atext = "Камбу";
+				case 6: atext = "Со - хонбуте";
+				case 5: atext = "Вакагасира";
+				case 4: atext = "Сямэйгасира";
+				case 3: atext = "Кёдай";
+				case 2: atext = "Томодати";
+				case 1: atext = "Вакасю";
+			}
+		}
+	case 12:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: atext = "Вор в законе";
+				case 9: atext = "Блатной";
+				case 8: atext = "Смотрящий";
+				case 7: atext = "Бригадир";
+				case 6: atext = "Зам. Бригадира";
+				case 5: atext = "Авторитет";
+				case 4: atext = "Бык";
+				case 3: atext = "Браток";
+				case 2: atext = "Босяк";
+				case 1: atext = "Шнырь";
+			}
+		}
+	case 13:
+		{
+			switch(PlayerInfo[playerid][pUnit])
+			{
+			case 0:
+				{
+					switch(PlayerInfo[playerid][pRang])
+					{
+						case 10: atext = "Министр здравоохранения";
+					}
+				}
+			case 1:
+				{
+					switch(PlayerInfo[playerid][pRang])
+					{
+						case 10: atext = "Главный врач";
+						case 9: atext = "Заведующий отделением";
+						case 8: atext = "Врач - хирург";
+						case 7: atext = "Младший специалист";
+						case 6: atext = "Врач - терапевт";
+						case 5: atext = "Врач - участковый";
+						case 4: atext = "Врач - окулист";
+						case 3: atext = "Старший мед.работник";
+						case 2: atext = "Младший мед.работник";
+						case 1: atext = "Интерн";
+					}
+				}
+			case 2:
+				{
+					switch(PlayerInfo[playerid][pRang])
+					{
+						case 10: atext = "Главный врач";
+						case 9: atext = "Заведующий отделением";
+						case 8: atext = "Врач - хирург";
+						case 7: atext = "Младший специалист";
+						case 6: atext = "Врач - терапевт";
+						case 5: atext = "Врач - участковый";
+						case 4: atext = "Врач - окулист";
+						case 3: atext = "Старший мед.работник";
+						case 2: atext = "Младший мед.работник";
+						case 1: atext = "Интерн";
+					}
+				}
+			case 3:
+				{
+					switch(PlayerInfo[playerid][pRang])
+					{
+						case 10: atext = "Главный врач";
+						case 9: atext = "Заведующий отделением";
+						case 8: atext = "Врач - хирург";
+						case 7: atext = "Младший специалист";
+						case 6: atext = "Врач - терапевт";
+						case 5: atext = "Врач - участковый";
+						case 4: atext = "Врач - окулист";
+						case 3: atext = "Старший мед.работник";
+						case 2: atext = "Младший мед.работник";
+						case 1: atext = "Интерн";
+					}
+				}
+			}
+		}
+	}
+	if(PlayerInfo[playerid][pJob] == 0 && PlayerInfo[playerid][pMember] == 0) atext = "Безработный";
+	if(PlayerInfo[playerid][pJob] == 1 && PlayerInfo[playerid][pMember] == 0) atext = "Водитель автобуса";
+	if(PlayerInfo[playerid][pJob] == 2 && PlayerInfo[playerid][pMember] == 0) atext = "Таксист";
+	if(PlayerInfo[playerid][pJob] == 3 && PlayerInfo[playerid][pMember] == 0) atext = "Пилот самолёта";
+	if(PlayerInfo[playerid][pJob] == 5 && PlayerInfo[playerid][pMember] == 0) atext = "Автомеханик";
+	return atext;
+}
+stock CheckCash(playerid)
+{
+	new cash;
+	switch(PlayerInfo[playerid][pMember])
+	{
+	case 0:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 0: cash = 0;
+			}
+		}
+	case 1:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 2900;
+				case 9: cash = 2600;
+				case 8: cash = 2300;
+				case 7: cash = 2000;
+				case 6: cash = 1700;
+				case 5: cash = 1400;
+				case 4: cash = 1100;
+				case 3: cash = 800;
+				case 2: cash = 500;
+				case 1: cash = 200;
+			}
+		}
+	case 2:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 2900;
+				case 9: cash = 2600;
+				case 8: cash = 2300;
+				case 7: cash = 2000;
+				case 6: cash = 1700;
+				case 5: cash = 1400;
+				case 4: cash = 1100;
+				case 3: cash = 800;
+				case 2: cash = 500;
+				case 1: cash = 200;
+			}
+		}
+	case 3:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 2900;
+				case 9: cash = 2600;
+				case 8: cash = 2300;
+				case 7: cash = 2000;
+				case 6: cash = 1700;
+				case 5: cash = 1400;
+				case 4: cash = 1100;
+				case 3: cash = 800;
+				case 2: cash = 500;
+				case 1: cash = 200;
+			}
+		}
+	case 4:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 2900;
+				case 9: cash = 2600;
+				case 8: cash = 2300;
+				case 7: cash = 2000;
+				case 6: cash = 1700;
+				case 5: cash = 1400;
+				case 4: cash = 1100;
+				case 3: cash = 800;
+				case 2: cash = 500;
+				case 1: cash = 200;
+			}
+		}
+	case 5:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 2900;
+				case 9: cash = 2600;
+				case 8: cash = 2300;
+				case 7: cash = 2000;
+				case 6: cash = 1700;
+				case 5: cash = 1400;
+				case 4: cash = 1100;
+				case 3: cash = 800;
+				case 2: cash = 500;
+				case 1: cash = 200;
+			}
+		}
+	case 6:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 4350;
+				case 9: cash = 3900;
+				case 8: cash = 3600;
+				case 7: cash = 3200;
+				case 6: cash = 2700;
+				case 5: cash = 2500;
+				case 4: cash = 2200;
+				case 3: cash = 1800;
+				case 2: cash = 1300;
+				case 1: cash = 915;
+			}
+		}
+	case 7:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 4380;
+				case 9: cash = 3800;
+				case 8: cash = 3440;
+				case 7: cash = 2800;
+				case 6: cash = 2650;
+				case 5: cash = 2500;
+				case 4: cash = 2200;
+				case 3: cash = 1700;
+				case 2: cash = 1300;
+				case 1: cash = 990;
+			}
+	 	}
+	case 8:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 4250;
+				case 9: cash = 3800;
+				case 8: cash = 3300;
+				case 7: cash = 2800;
+				case 6: cash = 2450;
+				case 5: cash = 2150;
+				case 4: cash = 1650;
+				case 3: cash = 1400;
+				case 2: cash = 1190;
+				case 1: cash = 890;
+			}
+		}
+	case 9:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 4500;
+				case 9: cash = 3900;
+				case 8: cash = 3600;
+				case 7: cash = 3100;
+				case 6: cash = 2600;
+				case 5: cash = 2300;
+				case 4: cash = 2000;
+				case 3: cash = 1700;
+				case 2: cash = 1300;
+				case 1: cash = 940;
+			}
+		}
+	case 10:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 3000;
+				case 9: cash = 2600;
+				case 8: cash = 2400;
+				case 7: cash = 2200;
+				case 6: cash = 2000;
+				case 5: cash = 1900;
+				case 4: cash = 1500;
+				case 3: cash = 1300;
+				case 2: cash = 1000;
+				case 1: cash = 860;
+			}
+		}
+	case 11:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 3000;
+				case 9: cash = 2600;
+				case 8: cash = 2400;
+				case 7: cash = 2200;
+				case 6: cash = 2000;
+				case 5: cash = 1900;
+				case 4: cash = 1500;
+				case 3: cash = 1300;
+				case 2: cash = 1000;
+				case 1: cash = 860;
+			}
+		}
+	case 12:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 3000;
+				case 9: cash = 2600;
+				case 8: cash = 2400;
+				case 7: cash = 2200;
+				case 6: cash = 2000;
+				case 5: cash = 1900;
+				case 4: cash = 1500;
+				case 3: cash = 1300;
+				case 2: cash = 1000;
+				case 1: cash = 860;
+			}
+		}
+	case 13:
+		{
+			switch(PlayerInfo[playerid][pRang])
+			{
+				case 10: cash = 4300;
+				case 9: cash = 3770;
+				case 8: cash = 3260;
+				case 7: cash = 2900;
+				case 6: cash = 2750;
+				case 5: cash = 2400;
+				case 4: cash = 2010;
+				case 3: cash = 1750;
+				case 2: cash = 1400;
+				case 1: cash = 1000;
+			}
+		}
+	}
+	return cash;
+}
+stock SendUnitMessage(playerid,color, str[])
+{
+	foreach(new users: Player)
+	{
+		if(PlayerInfo[playerid][pMember] == PlayerInfo[users][pMember])
+		{
+			if(PlayerInfo[playerid][pUnit] == PlayerInfo[users][pUnit])
+			{
+				SendClientMessage(users, color, str);
+			}
+		}
+	}
+}
+stock SendMemberSound(playerid, soundid, Float:x, Float:y, Float:z)
+{
+	foreach(new users: Player)
+	{
+		if(PlayerInfo[playerid][pMember] == PlayerInfo[users][pMember])
+		{
+		    PlayerPlaySound(users, soundid, Float:x, Float:y, Float:z);
+		}
+	}
+}
+stock SendMemberMessage(playerid,color, str[])
+{
+	foreach(new users: Player)
+	{
+		if(PlayerInfo[playerid][pMember] == PlayerInfo[users][pMember])
+		{
+			SendClientMessage(users, color, str);
+		}
+	}
+}
+stock SMM(member,color, str[])
+{
+	foreach(new user: Player)
+	{
+		if(member == PlayerInfo[user][pMember])
+		{
+			SendClientMessage(user, color, str);
+		}
+	}
+}
+stock GetGangZoneColor(gangzonex)
+{
+	new zx;
+	switch(GZInfo[gangzonex][gMemberZone])
+	{
+		case 0: zx = COLOR_WHITE;
+		case 1: zx = COLOR_GROVE;
+		case 2: zx = COLOR_BALLAS;
+		case 3: zx = COLOR_AZTEC;
+		case 4: zx = COLOR_VAGOS;
+		case 5: zx = COLOR_RIFA;
+		case 10: zx = COLOR_LCN;
+		case 11: zx = COLOR_YAKUZA;
+		case 12: zx = COLOR_RM;
+	}
+	return zx;
+}
+stock split(const strsrc[], strdest[][], delimiter)
+{
+	new i, li;
+	new aNum;
+	new len;
+	while(i <= strlen(strsrc))
+	{
+		if(strsrc[i]==delimiter || i==strlen(strsrc))
+		{
+			len = strmid(strdest[aNum], strsrc, li, i, 128);
+			strdest[aNum][len] = 0;
+			li = i+1;
+			aNum++;
+		}
+		i++;
+	}
+	return 1;
+}
+stock GetPlayerZone(playerid)
+{
+	new Float:POS[3],zone[32],bool:getzone;
+	GetPlayerPos(playerid, POS[0], POS[1], POS[2]);
+	for(new i=0; i<sizeof(gZoneInfo); i++)
+	{
+		if(POS[0] >= gZoneInfo[i][SAZONE_AREA][0] && POS[0] <= gZoneInfo[i][SAZONE_AREA][3] && POS[1] >= gZoneInfo[i][SAZONE_AREA][1] && POS[1] <= gZoneInfo[i][SAZONE_AREA][4])
+		{
+			settext(zone, gZoneInfo[i][SAZONE_NAME]);
+			getzone = true;
+			break;
+		}
+	}
+	if(!getzone) zone = "Неизвестно";
+	return zone;
+}
+stock GetJobName(fnumbwer)
+{
+	new str[64];
+	switch(fnumbwer)
+	{
+		case 0: format(str,sizeof(str),"Безработный");
+		case 1: format(str,sizeof(str),"Водитель автобуса");
+		case 2: format(str,sizeof(str),"Таксист");
+		case 3: format(str,sizeof(str),"Пилот");
+		case 4: format(str,sizeof(str),"Адвокат");
+		case 5: format(str,sizeof(str),"Автомеханик");
+		case 6: format(str,sizeof(str),"Пожарный");
+	}
+	return str;
+}
+stock GetGangName(fnumbwer)
+{
+	new str[64];
+	switch(fnumbwer)
+	{
+		case 0: format(str,sizeof(str),"Безработный");
+		case 1: format(str,sizeof(str),"Grove Street");
+		case 2: format(str,sizeof(str),"The Ballas");
+		case 3: format(str,sizeof(str),"Varios Los Aztecas");
+		case 4: format(str,sizeof(str),"Los Santos Vagos");
+		case 5: format(str,sizeof(str),"The Rifa");
+		case 6: format(str,sizeof(str),"Министерство внутренних дел");
+		case 7: format(str,sizeof(str),"ТВ и Радио");
+		case 8: format(str,sizeof(str),"Министерство обороны");
+		case 9: format(str,sizeof(str),"Правительство");
+		case 10: format(str,sizeof(str),"La Cosa Nostra");
+		case 11: format(str,sizeof(str),"Yakuza");
+		case 12: format(str,sizeof(str),"Russian Mafia");
+		case 13: format(str,sizeof(str),"Министерство здравоохранения");
+	}
+	return str;
+}
+stock GetUnitName(member, unit)
+{
+	new text[64];
+	switch(unit)
+	{
+		case 0: text = "Нет";
+	}
+	switch(member)
+	{
+		case 0:
+		{
+			switch(unit)
+			{
+				case 0: text = "Нет";
+			}
+		}
+		case 6:
+		{
+			switch(unit)
+			{
+				case 4: text = "ФБР";
+				case 3: text = "Управление полиции ЛВ";
+				case 2: text = "Управление полиции СФ";
+				case 1: text = "Управление полиции ЛС";
+			}
+		}
+		case 7:
+		{
+			switch(unit)
+			{
+				case 4: text = "Телецентр";
+				case 3: text = "Радиоцентр ЛВ";
+				case 2: text = "Радиоцентр СФ";
+				case 1: text = "Радиоцентр ЛС";
+			}
+		}
+		case 8:
+		{
+			switch(unit)
+			{
+				case 3: text = "Военно - морской флот";
+				case 2: text = "Военно - воздушные силы";
+				case 1: text = "Сухопутные войска";
+			}
+		}
+		case 9:
+		{
+			switch(unit)
+			{
+				case 4: text = "Мэрия города Лас - Вентурас";
+				case 3: text = "Мэрия города Сан - Фиерро";
+				case 2: text = "Мэрия города Лос - Сантос";
+				case 1: text = "Администрация президента";
+			}
+		}
+		case 13:
+		{
+			switch(unit)
+			{
+				case 3: text = "Городская больница ЛВ";
+				case 2: text = "Городская больница СФ";
+				case 1: text = "Городская больница ЛС";
+			}
+		}
+	}
+	return text;
+}
+stock GetGZColorF(fnumber)
+{
+	new zx;
+	switch(fnumber)
+	{
+		case 1: zx = COLOR_GROVE;
+		case 2: zx = COLOR_BALLAS;
+		case 3: zx = COLOR_AZTEC;
+		case 4: zx = COLOR_VAGOS;
+		case 5: zx = COLOR_RIFA;
+		case 10: zx = COLOR_LCN;
+		case 11: zx = COLOR_YAKUZA;
+		case 12: zx = COLOR_RM;
+	}
+	return zx;
+}
+stock IsPlayerInBandOnlinez(bandid)
+{
+	foreach(Player, i)
+	{
+		if(PlayerInfo[i][pMember] == bandid || PlayerInfo[i][pLeader] == bandid) return 1;
+	}
+ 	return 0;
+}
+stock IsPlayerInBandOnline(bandid)
+{
+	new np;
+	foreach(new i:Player)
+	{
+		if(PlayerInfo[i][pMember] == bandid)
+		{
+			np++;
+		}
+	}
+	return np;
+}
+stock Admin()
+{
+	for(new i = 1; i < sizeof(GZInfo); i++)
+	{
+		GangZoneHideForAll(GZInfo[i][gID]);
+		GangZoneShowForAll(GZInfo[i][gID],GetGangZoneColor(i));
+	}
+	UpdateStoreGrove();
+	UpdateStoreBallas();
+	UpdateStoreAztec();
+	UpdateStoreVagos();
+	UpdateStoreRifa();
+	UpdateMafia(0);
+	UpdateMafia(1);
+	UpdateMafia(2);
+	return 1;
+}
+stock SaveStoreGrove()
+{
+	new mquery[90];
+	format(mquery, sizeof(mquery), "UPDATE store SET money = %d, ammo = %d, metall = %d WHERE ID = 1", StoreInfo[1][oMoney], StoreInfo[1][oAmmo], StoreInfo[1][oMetall]);
+	mysql_pquery(dbHandle, mquery);
+}
+stock SaveStoreBallas()
+{
+    new mquery[90];
+	format(mquery, sizeof(mquery), "UPDATE store SET money = %d, ammo = %d, metall = %d WHERE ID = 2", StoreInfo[2][oMoney], StoreInfo[2][oAmmo], StoreInfo[2][oMetall]);
+	mysql_pquery(dbHandle, mquery);
+}
+stock SaveStoreAztec()
+{
+    new mquery[90];
+	format(mquery, sizeof(mquery), "UPDATE store SET money = %d, ammo = %d, metall = %d WHERE ID = 3", StoreInfo[3][oMoney], StoreInfo[3][oAmmo], StoreInfo[3][oMetall]);
+	mysql_pquery(dbHandle, mquery);
+}
+stock SaveStoreVagos()
+{
+    new mquery[90];
+	format(mquery ,sizeof(mquery), "UPDATE store SET money = %d, ammo = %d, metall = %d WHERE ID = 4", StoreInfo[4][oMoney], StoreInfo[4][oAmmo], StoreInfo[4][oMetall]);
+	mysql_pquery(dbHandle, mquery);
+}
+stock SaveStoreRifa()
+{
+    new mquery[90];
+	format(mquery, sizeof(mquery), "UPDATE store SET money = %d, ammo = %d, metall = %d WHERE ID = 5", StoreInfo[5][oMoney], StoreInfo[5][oAmmo], StoreInfo[5][oMetall]);
+	mysql_pquery(dbHandle, mquery);
+}
+stock SaveGangsStores()
+{
+	new mquery[128];
+	format(mquery, sizeof(mquery), "UPDATE store SET `Money` = '%d', `Ammo` = '%d', `Metall` = '%d', `Lock` = '%d' WHERE ID = 1", StoreInfo[1][oMoney], StoreInfo[1][oAmmo], StoreInfo[1][oMetall], StoreInfo[1][oLock]);
+	mysql_pquery(dbHandle, mquery);
+
+	format(mquery, sizeof(mquery), "UPDATE store SET `Money` = '%d', `Ammo` = '%d', `Metall` = '%d', `Lock` = '%d' WHERE ID = 2", StoreInfo[2][oMoney], StoreInfo[2][oAmmo], StoreInfo[2][oMetall], StoreInfo[2][oLock]);
+	mysql_pquery(dbHandle, mquery);
+
+	format(mquery, sizeof(mquery), "UPDATE store SET `Money` = '%d', `Ammo` = '%d', `Metall` = '%d', `Lock` = '%d' WHERE ID = 3", StoreInfo[3][oMoney], StoreInfo[3][oAmmo], StoreInfo[3][oMetall], StoreInfo[3][oLock]);
+	mysql_pquery(dbHandle, mquery);
+
+	format(mquery ,sizeof(mquery), "UPDATE store SET `Money` = '%d', `Ammo` = '%d', `Metall` = '%d', `Lock` = '%d' WHERE ID = 4", StoreInfo[4][oMoney], StoreInfo[4][oAmmo], StoreInfo[4][oMetall], StoreInfo[4][oLock]);
+	mysql_pquery(dbHandle, mquery);
+
+	format(mquery, sizeof(mquery), "UPDATE store SET `Money` = '%d', `Ammo` = '%d', `Metall` = '%d', `Lock` = '%d' WHERE ID = 5", StoreInfo[5][oMoney], StoreInfo[5][oAmmo], StoreInfo[5][oMetall], StoreInfo[5][oLock]);
+	mysql_pquery(dbHandle, mquery);
+}
+stock SaveMafiaStores()
+{
+	new mquery[128];
+	format(mquery, sizeof(mquery), "UPDATE mafia SET `Money` = %d, `Metall` = %d, `Ammo` = %d, `Gun` = %d, `Lock` = %d WHERE `ID` = 0", Mafia[0][pMoney], Mafia[0][pMetall], Mafia[0][pAmmo], Mafia[0][pAll], Mafia[0][pLock]);
+	mysql_pquery(dbHandle, mquery);
+
+	format(mquery, sizeof(mquery), "UPDATE mafia SET `Money` = %d, `Metall` = %d, `Ammo` = %d, `Gun` = %d, `Lock` = %d WHERE `ID` = 1", Mafia[1][pMoney], Mafia[1][pMetall], Mafia[1][pAmmo], Mafia[1][pAll], Mafia[1][pLock]);
+	mysql_pquery(dbHandle, mquery);
+
+	format(mquery, sizeof(mquery), "UPDATE mafia SET `Money` = %d, `Metall` = %d, `Ammo` = %d, `Gun` = %d, `Lock` = %d WHERE `ID` = 2", Mafia[2][pMoney], Mafia[2][pMetall], Mafia[2][pAmmo], Mafia[2][pAll], Mafia[2][pLock]);
+	mysql_pquery(dbHandle, mquery);
+}
+stock SaveArmyStores()
+{
+    new mquery[128];
+	format(mquery, sizeof(mquery), "UPDATE storesmo SET metall = %d, ammo=%d WHERE ID = 1", StoreMO[1][oMetall], StoreMO[1][oAmmo]);
+	mysql_pquery(dbHandle, mquery);
+
+	format(mquery, sizeof(mquery), "UPDATE storesmo SET metall = %d, ammo=%d WHERE ID = 2", StoreMO[2][oMetall], StoreMO[2][oAmmo]);
+	mysql_pquery(dbHandle, mquery);
+
+	format(mquery, sizeof(mquery), "UPDATE storesmo SET metall = %d, ammo=%d WHERE ID = 3", StoreMO[3][oMetall], StoreMO[3][oAmmo]);
+	mysql_pquery(dbHandle, mquery);
+}
+stock SaveMiner()
+{
+	new mquery[128];
+	format(mquery, sizeof(mquery), "UPDATE miner SET AllRuda=%d, AllMetall=%d WHERE ID = 0", AllRuda, AllMetall);
+	mysql_pquery(dbHandle, mquery);
+}
+stock UpdateStoreMiner()
+{
+	new jaster[64];
+	format(jaster,sizeof(jaster),"Руды в обработке: %d кг",AllRuda);
+	Update3DTextLabelText(AllRudas, 0xFFFF00FF, jaster);
+	return 1;
+}
+stock UpdateStoreMetallAll()
+{
+	format(query,sizeof(query),"Всего металла на складе: %d кг",AllMetall);
+	Update3DTextLabelText(AllMetalls, 0xFFFF00FF, query);
+	format(query,sizeof(query),"Всего металла на складе: %d кг\n{0099FF}Используйте /buym",AllMetall);
+	Update3DTextLabelText(MinerBuy, 0xFFFF00FF, query);
+	return 1;
+}
+stock UpdateStoreGrove()
+{
+	if(StoreInfo[1][oLock] == 1)format(query,sizeof(query),"{FFFFFF}Количество территорий: %d\n\n{00CC00}Grove Street\n{FFFFFF}Наркотики: {FF8C00}%i / 30000 гр.\n{FFFFFF}Патроны: {FF8C00}%i / 45000 шт.\n{FFFFFF}Металл: {FF8C00}%i / 7000 кг.\n{FFFFFF}Склад: {FF0000}Закрыт",GhettoMen[0],StoreInfo[1][oMoney],StoreInfo[1][oAmmo],StoreInfo[1][oMetall]);
+    if(StoreInfo[1][oLock] == 0)format(query,sizeof(query),"{FFFFFF}Количество территорий: %d\n\n{00CC00}Grove Street\n{FFFFFF}Наркотики: {FF8C00}%i / 30000 гр.\n{FFFFFF}Патроны: {FF8C00}%i / 45000 шт.\n{FFFFFF}Металл: {FF8C00}%i / 7000 кг.\n{FFFFFF}Склад: {00CC00}Открыт",GhettoMen[0],StoreInfo[1][oMoney],StoreInfo[1][oAmmo],StoreInfo[1][oMetall]);
+	Update3DTextLabelText(StoreGrove, 0xffff00FF, query);
+	return 1;
+}
+stock UpdateStoreBallas()
+{
+	if(StoreInfo[2][oLock] >= 1)format(query,sizeof(query),"{FFFFFF}Количество территорий: %d\n\n{CC00FF}The Ballas\n{FFFFFF}Наркотики: {FF8C00}%i / 30000 гр.\n{FFFFFF}Патроны: {FF8C00}%i / 45000 шт.\n{FFFFFF}Металл: {FF8C00}%i / 7000 кг.\n{FFFFFF}Склад: {FF0000}Закрыт",GhettoMen[1],StoreInfo[2][oMoney],StoreInfo[2][oAmmo],StoreInfo[2][oMetall]);
+	if(StoreInfo[2][oLock] == 0)format(query,sizeof(query),"{FFFFFF}Количество территорий: %d\n\n{CC00FF}The Ballas\n{FFFFFF}Наркотики: {FF8C00}%i / 30000 гр.\n{FFFFFF}Патроны: {FF8C00}%i / 45000 шт.\n{FFFFFF}Металл: {FF8C00}%i / 7000 кг.\n{FFFFFF}Склад: {00CC00}Открыт",GhettoMen[1],StoreInfo[2][oMoney],StoreInfo[2][oAmmo],StoreInfo[2][oMetall]);
+	Update3DTextLabelText(StoreBallas, 0xffff00FF, query);
+	return 1;
+}
+stock UpdateStoreAztec()
+{
+	if(StoreInfo[3][oLock] >= 1)format(query,sizeof(query),"{FFFFFF}Количество территорий: %d\n\n{00F5FF}Varios Los Aztecas\n{FFFFFF}Наркотики: {FF8C00}%i / 30000 гр.\n{FFFFFF}Патроны: {FF8C00}%i / 45000 шт.\n{FFFFFF}Металл: {FF8C00}%i / 7000 кг.\n{FFFFFF}Склад: {FF0000}Закрыт",GhettoMen[2],StoreInfo[3][oMoney],StoreInfo[3][oAmmo],StoreInfo[3][oMetall]);
+	if(StoreInfo[3][oLock] == 0)format(query,sizeof(query),"{FFFFFF}Количество территорий: %d\n\n{00F5FF}Varios Los Aztecas\n{FFFFFF}Наркотики: {FF8C00}%i / 30000 гр.\n{FFFFFF}Патроны: {FF8C00}%i / 45000 шт.\n{FFFFFF}Металл: {FF8C00}%i / 7000 кг.\n{FFFFFF}Склад: {00CC00}Открыт",GhettoMen[2],StoreInfo[3][oMoney],StoreInfo[3][oAmmo],StoreInfo[3][oMetall]);
+	Update3DTextLabelText(StoreAztec, 0xffff00FF, query);
+	return 1;
+}
+stock UpdateStoreVagos()
+{
+	if(StoreInfo[4][oLock] >= 1)format(query,sizeof(query),"{FFFFFF}Количество территорий: %d\n\n{ffcd00}Los Santos Vagos\n{FFFFFF}Наркотики: {FF8C00}%i / 30000 гр.\n{FFFFFF}Патроны: {FF8C00}%i / 45000 шт.\n{FFFFFF}Металл: {FF8C00}%i / 7000 кг.\n{FFFFFF}Склад: {FF0000}Закрыт",GhettoMen[3],StoreInfo[4][oMoney],StoreInfo[4][oAmmo],StoreInfo[4][oMetall]);
+	if(StoreInfo[4][oLock] == 0)format(query,sizeof(query),"{FFFFFF}Количество территорий: %d\n\n{ffcd00}Los Santos Vagos\n{FFFFFF}Наркотики: {FF8C00}%i / 30000 гр.\n{FFFFFF}Патроны: {FF8C00}%i / 45000 шт.\n{FFFFFF}Металл: {FF8C00}%i / 7000 кг.\n{FFFFFF}Склад: {00CC00}Открыт",GhettoMen[3],StoreInfo[4][oMoney],StoreInfo[4][oAmmo],StoreInfo[4][oMetall]);
+	Update3DTextLabelText(StoreVagos, 0xffff00FF, query);
+	return 1;
+}
+stock Updatetext_hospital(idkoika)
+{
+	new string[144];
+	format(string,sizeof(string),"{FFFFFF}Койка\n{AA3333}Занята!\n{ffcf00}Пациент: %s",nametext[idkoika]);
+	Update3DTextLabelText(text_hospital[idkoika], 0xbd0606AA, string);
+	if(koika[idkoika] == false) Update3DTextLabelText(text_hospital[idkoika], 0xFF0000AA, "{FFFFFF}Койка\n{00cb00}Свободна\n\n{adaaad}Используйте /med\nчтобы занять её");
+	return 1;
+}
+stock UpdateStoreRifa()
+{
+	if(StoreInfo[5][oLock] >= 1)format(query,sizeof(query),"{FFFFFF}Количество территорий: %d\n\n{6666ff}The Rifa\n{FFFFFF}Наркотики: {FF8C00}%i / 30000 гр.\n{FFFFFF}Патроны: {FF8C00}%i / 45000 шт.\n{FFFFFF}Металл: {FF8C00}%i / 7000 кг.\n{FFFFFF}Склад: {FF0000}Закрыт",GhettoMen[4],StoreInfo[5][oMoney],StoreInfo[5][oAmmo],StoreInfo[5][oMetall]);
+	if(StoreInfo[5][oLock] == 0)format(query,sizeof(query),"{FFFFFF}Количество территорий: %d\n\n{6666ff}The Rifa\n{FFFFFF}Наркотики: {FF8C00}%i / 30000 гр.\n{FFFFFF}Патроны: {FF8C00}%i / 45000 шт.\n{FFFFFF}Металл: {FF8C00}%i / 7000 кг.\n{FFFFFF}Склад: {00CC00}Открыт",GhettoMen[4],StoreInfo[5][oMoney],StoreInfo[5][oAmmo],StoreInfo[5][oMetall]);
+	Update3DTextLabelText(StoreRifa, 0xffff00FF, query);
+	return 1;
+}
+stock UpdateStoresMO()
+{
+	format(query,sizeof(query),"Патроны:\n%d из 2000000", StoreMO[1][oAmmo]);
+	Update3DTextLabelText(StoresMO[0], 0xFFFF00FF, query);
+	format(query,sizeof(query),"Патроны:\n%d из 2000000", StoreMO[2][oAmmo]);
+	Update3DTextLabelText(StoresMO[1], 0xFFFF00FF, query);
+	format(query,sizeof(query),"Патроны:\n%d из 2000000", StoreMO[3][oAmmo]);
+	Update3DTextLabelText(StoresMO[2], 0xFFFF00FF, query);
+	return 1;
+}
+stock UpdateStoreMetall(idskl)
+{
+	format(query,sizeof(query),"{FFFFFF}Металла на складе: \n{ACCC09}%d кг\n\n{A0AADA}/takem\n{A0AADA}/putm",StoreMO[idskl+1][oMetall]);
+	Update3DTextLabelText(METALLMO[idskl], COLOR_WHITE, query);
+	return 1;
+}
+stock UpdateMafia(idskl)
+{
+	if(idskl == 0)
+	{
+        new string[180];
+		if(Mafia[0][pLock] >= 1)format(string,sizeof(string),"{993366}La Cosa Nostra\n{ffffff}Деньги: {00cc00}%d$\n{ffffff}Патроны: {0099FF}%d шт\n{ffffff}Металл: {0099FF}%d кг\n{FFFFFF}Склад: {FF0000}Закрыт",Mafia[0][pMoney],Mafia[0][pAmmo],Mafia[0][pMetall]);
+		if(Mafia[0][pLock] == 0)format(string,sizeof(string),"{993366}La Cosa Nostra\n{ffffff}Деньги: {00cc00}%d$\n{ffffff}Патроны: {0099FF}%d шт\n{ffffff}Металл: {0099FF}%d кг\n{FFFFFF}Склад: {00CC00}Открыт",Mafia[0][pMoney],Mafia[0][pAmmo],Mafia[0][pMetall]);
+		Update3DTextLabelText(Mafia[0][pText], 0x993366FF, string);
+	}
+	if(idskl == 1)
+	{
+        new string[180];
+		if(Mafia[1][pLock] >= 1)format(string,sizeof(string),"{007575}Русская мафия\n{ffffff}Деньги: {00cc00}%d$\n{ffffff}Патроны: {0099FF}%d шт\n{ffffff}Металл: {0099FF}%d кг\n{FFFFFF}Склад: {FF0000}Закрыт",Mafia[1][pMoney],Mafia[1][pAmmo],Mafia[1][pMetall]);
+		if(Mafia[1][pLock] == 0)format(string,sizeof(string),"{007575}Русская мафия\n{ffffff}Деньги: {00cc00}%d$\n{ffffff}Патроны: {0099FF}%d шт\n{ffffff}Металл: {0099FF}%d кг\n{FFFFFF}Склад: {00CC00}Открыт",Mafia[1][pMoney],Mafia[1][pAmmo],Mafia[1][pMetall]);
+		Update3DTextLabelText(Mafia[1][pText], 0x007575FF, string);
+	}
+	if(idskl == 2)
+	{
+        new string[180];
+		if(Mafia[2][pLock] >= 1)format(string,sizeof(string),"{bb0000}Yakuza\n{ffffff}Деньги: {00cc00}%d$\n{ffffff}Патроны: {0099FF}%d шт\n{ffffff}Металл: {0099FF}%d кг\n{FFFFFF}Склад: {FF0000}Закрыт",Mafia[2][pMoney],Mafia[2][pAmmo],Mafia[2][pMetall]);
+		if(Mafia[2][pLock] == 0)format(string,sizeof(string),"{bb0000}Yakuza\n{ffffff}Деньги: {00cc00}%d$\n{ffffff}Патроны: {0099FF}%d шт\n{ffffff}Металл: {0099FF}%d кг\n{FFFFFF}Склад: {00CC00}Открыт",Mafia[2][pMoney],Mafia[2][pAmmo],Mafia[2][pMetall]);
+		Update3DTextLabelText(Mafia[2][pText], 0xbb0000FF, string);
+	}
+	return 1;
+}
+stock UpdateMafiaGun(idskl)
+{
+	if(idskl == 0)
+	{
+		format(query,sizeof(query),"La Cosa Nostra\n{ffff00}Оружейная\n\n{FFFFFF}Всего %d ед. оружия",Mafia[0][pAll]);
+		Update3DTextLabelText(Mafia[0][pTextGun], 0x993366FF, query);
+	}
+	if(idskl == 1)
+	{
+		format(query,sizeof(query),"Русская мафия\n{ffff00}Оружейная\n\n{FFFFFF}Всего %d ед. оружия",Mafia[1][pAll]);
+		Update3DTextLabelText(Mafia[1][pTextGun], 0x007575FF, query);
+	}
+	if(idskl == 2)
+	{
+		format(query,sizeof(query),"Yakuza\n{ffff00}Оружейная\n\n{FFFFFF}Всего %d ед. оружия",Mafia[2][pAll]);
+		Update3DTextLabelText(Mafia[2][pTextGun], 0xbb0000FF, query);
+	}
+	return 1;
+}
+stock ChangeName(adminID,changeID)
+{
+	if(OkayInfo[changeID][pChangeOn] == false) return SendClientMessage(adminID, COLOR_GRAD, "Данный игрок не подавал заявку на смену имени.");
+	if(adminID == changeID)
+	{
+		PlayerInfo[adminID][pAdmin] = 0;
+		SendClientMessage(adminID,COLOR_YELLOW, "Ваш уровень администратора был понижен.");
+	}
+	new newstring[40];
+	mysql_real_escape_string(OkayInfo[changeID][pNewName], newstring);
+	new newstringas[40];
+	mysql_real_escape_string(PlayerInfo[changeID][pName], newstringas);
+	new setchname[80];
+	format(setchname, sizeof(setchname), "update accounts set name = '%s' where name = '%s'",newstring, newstringas);
+	mysql_query(dbHandle,setchname,false);
+	SetPlayerName(changeID, OkayInfo[changeID][pNewName]);
+	format(query,sizeof(query),"%s изменил(а) nonRP имя на %s",newstringas,newstring);
+	SendClientMessageToAll(0xCCFF00AA,query);
+	ShowPlayerDialog(changeID,1277,DIALOG_STYLE_MSGBOX,"{FFCC00}Имя успешно изменено","{ffffff}Не забудьте изменить имя в окне SA-MP.\nРекомендуем прямо сейчас свернуть игру и сделать это.\n\nЖелаем Вам приятной игры!","Закрыть","");
+	format(query,sizeof(query),"[A] Заявку одобрил администратор %s[%d]",PlayerInfo[adminID][pName], adminID);
+	SendAdminMessage(COLOR_GRAD,query);
+	GetPlayerName(changeID, PlayerInfo[changeID][pName], MAX_PLAYER_NAME+1);
+	OkayInfo[changeID][pChangeOn] = false;
+	if(PlayerInfo[changeID][pHouse] < 999)
+	{
+		strmid(HouseInfo[PlayerInfo[changeID][pHouse]][hOwner], PlayerInfo[changeID][pName], 0, strlen(PlayerInfo[changeID][pName]), 255);
+	}
+	if(PlayerInfo[changeID][pBusiness] < 999)
+	{
+		strmid(BizInfo[PlayerInfo[changeID][pBusiness]][bOwner], PlayerInfo[changeID][pName], 0, strlen(PlayerInfo[changeID][pName]), 255);
+		UpdateBiz(PlayerInfo[changeID][pBusiness]);
+	}
+	if(PlayerInfo[changeID][pFuel] < 999)
+	{
+		strmid(FuelStInfo[PlayerInfo[changeID][pFuel]][bOwner], PlayerInfo[changeID][pName], 0, strlen(PlayerInfo[changeID][pName]), 255);
+		UpdateFuelSt(PlayerInfo[changeID][pFuel]);
+	}
+	return 1;
+}
+stock Exp()
+{
+	foreach(new i : Player)
+	{
+		if(login_check[i] == true)
+		{
+			if(PlayerInfo[i][pAFK] == false && PlayerInfo[i][pInGameTime] >= 20) PlayerInfo[i][pCheckTime] += 1;
+			if(DoubleEXP > 0)
+			{
+				PlayerInfo[i][pCheckTime] += 1;
+				SendClientMessage(i,0x0066FFAA, "Сегодня действует акция x2 EXP. Приятной игры на Advance RP.");
+			}
+			if(PlayerInfo[i][pWanted] >= 1) PlayerInfo[i][pWanted] -= 1;
+			SetPlayerWantedLevel(i,PlayerInfo[i][pWanted]);
+			new nxtlevel = PlayerInfo[i][pLevel]+1;
+			slow[i] = nxtlevel*4;
+			if(slow[i] == PlayerInfo[i][pCheckTime])
+			{
+				PlayerInfo[i][pLevel] ++;
+				SendClientMessage(i,0x0066FFAA, "Поздравляем! Ваш уровень повышен");
+				SetPlayerScore(i, PlayerInfo[i][pLevel]);
+				PlayerInfo[i][pCheckTime] = 1;
+				if(PlayerInfo[i][pLevel] == 4)
+				{
+					new target;
+					target = ReturnUser(PlayerInfo[i][pAward]);
+					if(target >= 0 && target != INVALID_PLAYER_ID)
+					{
+						PlayerInfo[target][pMoney] += 50000;
+						format(query, sizeof(query), "Игрок %s указал Ваш ник при регистрации, Вы получили вознаграждение {00cc00}50.000$", PlayerInfo[i][pName]);
+						SendClientMessage(target, 0xFFCC00AA, query);
+						format(query, sizeof(query), "При регистрации Вы указали ник пригласившего Вас игрока %s.", PlayerInfo[i][pAward]);
+						SendClientMessage(i, 0xFFCC00AA, query);
+						SendClientMessage(i,0x0099FFAA, "Этому игроку выдано вознаграждение в размере {00cc00}50.000$");
+					}
+					if(target == INVALID_PLAYER_ID)
+					{
+					    new upfive[80];
+						format(upfive, sizeof(upfive), "SELECT * FROM accounts WHERE name = '%s'", PlayerInfo[i][pAward]);
+						new Cache: ramil_jopa = mysql_query(dbHandle,upfive,true);
+						if(cache_num_rows() > 0)
+						{
+						    new getnamers[100];
+							new setplus,rows,fields,temp[40];
+							format(getnamers,sizeof(getnamers), "SELECT money FROM "TABLE_ACCOUNT" WHERE name = '%s' LIMIT 1",PlayerInfo[i][pAward]);
+							new Cache: lolpizda = mysql_query(dbHandle,getnamers,true);
+							cache_get_data (rows, fields, dbHandle);
+   							if(rows)
+    						{
+        						cache_get_field_content(0, "Money", temp),setplus = strval(temp);
+    						}
+    						cache_delete(lolpizda);
+							setplus += 50000;
+							new setasers[90];
+							format(setasers, sizeof(setasers), "update accounts set money = '%i' where name = '%s'",setplus, PlayerInfo[i][pAward]);
+							mysql_query(dbHandle,setasers,false);
+						}
+						cache_delete(ramil_jopa);
+					}
+				}
+			}
+		}
+	}
+	return 1;
+}
+stock mask(playerid)
+{
+	MASKED[playerid] = 0;
+	SetPVarInt(playerid, "MASKON", 0);
+	SColor(playerid);
+	SendClientMessage(playerid, COLOR_GRAD, "С Вас снята маска.");
+	return 1;
+}
+stock SColor(playerid)
+{
+	switch(PlayerInfo[playerid][pMember])
+	{
+		case 14: SetPlayerColor(playerid, COLOR_BK);
+		case 13: SetPlayerColor(playerid, COLOR_MZ);
+		case 12: SetPlayerColor(playerid, COLOR_RM);
+		case 11: SetPlayerColor(playerid, COLOR_YAKUZA);
+		case 10: SetPlayerColor(playerid, COLOR_LCN);
+		case 9: SetPlayerColor(playerid, COLOR_PRAV);
+		case 8: SetPlayerColor(playerid, COLOR_MO);
+		case 7: SetPlayerColor(playerid, COLOR_SMI);
+		case 6: SetPlayerColor(playerid, COLOR_MVD);
+		case 5: SetPlayerColor(playerid, COLOR_RIFA);
+		case 4: SetPlayerColor(playerid, COLOR_VAGOS);
+		case 3: SetPlayerColor(playerid, COLOR_AZTEC);
+		case 2: SetPlayerColor(playerid, COLOR_BALLAS);
+		case 1: SetPlayerColor(playerid, COLOR_GROVE);
+		case 0: SetPlayerColor(playerid, COLOR_NOF);
+	}
+	return 1;
+}
+stock Spawnls(playerid)
+{
+    if(PlayerInfo[playerid][pLevel] < 300)
+	{
+	    SetPlayerPos(playerid, 1174.5201,-1330.0073,4001.1001);
+		SetPlayerFacingAngle(playerid, 84.3453);
+		SetPlayerInterior(playerid, 1);
+		SetPlayerVirtualWorld(playerid, 1);
+		intertest[playerid] = 1;
+		PlayerInfo[playerid][pHealth] = 30.0;
+		SetPlayerHealth(playerid, PlayerInfo[playerid][pHealth]);
+		PlayerInfo[playerid][killerls] = false;
+	}
+	return 1;
+}
+stock Spawnsf(playerid)
+{
+    if(PlayerInfo[playerid][pLevel] < 300)
+	{
+	    SetPlayerPos(playerid, 1174.5201,-1330.0073,4001.1001);
+		SetPlayerFacingAngle(playerid, 84.3453);
+		SetPlayerInterior(playerid, 1);
+		SetPlayerVirtualWorld(playerid, 2);
+		intertest[playerid] = 1;
+		PlayerInfo[playerid][pHealth] = 30.0;
+		SetPlayerHealth(playerid, PlayerInfo[playerid][pHealth]);
+		PlayerInfo[playerid][killersf] = false;
+	}
+	return 1;
+}
+stock Spawnlv(playerid)
+{
+    if(PlayerInfo[playerid][pLevel] < 300)
+	{
+	    SetPlayerPos(playerid, 1174.5201,-1330.0073,4001.1001);
+		SetPlayerFacingAngle(playerid, 84.3453);
+		SetPlayerInterior(playerid, 1);
+		SetPlayerVirtualWorld(playerid, 3);
+		intertest[playerid] = 1;
+		PlayerInfo[playerid][pHealth] = 30.0;
+		SetPlayerHealth(playerid, PlayerInfo[playerid][pHealth]);
+		PlayerInfo[playerid][killerlv] = false;
+	}
+	return 1;
+}
+forward BanInfo(playerid);
+public BanInfo(playerid)
+{
+/*
+new nameakk[32],queryinfer[150];
+				if(strval(akk) >= 1) format(queryinfer,sizeof(queryinfer), "SELECT * FROM "TABLE_ACCOUNT" WHERE IDacc = '%i' LIMIT 1",strval(akk));
+				if(strval(akk) < 1) format(queryinfer, sizeof(queryinfer), "SELECT * FROM "TABLE_ACCOUNT" WHERE name = '%s' LIMIT 1", akk);
+				new Cache: infogetacc = mysql_query(dbHandle,queryinfer,true);
+				cache_get_data (rows, fields, dbHandle);
+				if(rows)
+				{
+					cache_get_field_content(0, "name", nameakk, 24);
+					cache_get_field_content(0, "Rip", rip, 16);
+					cache_get_field_content(0, "Lip", lip, 16);
+					lvl = cache_get_field_content_int(0, "level");
+					warn = cache_get_field_content_int(0, "warn");
+					idacc = cache_get_field_content_int(0, "IDacc");
+					dontall = cache_get_field_content_int(0, "DonateAll");
+					cache_get_field_content(0, "datereg", regan, 20);
+				}
+				cache_delete(infogetacc);
+*/
+	new rows,fields;
+	cache_get_data(rows, fields, dbHandle);
+	if(rows)
+	{
+		new unban, name[48], admin[48], reason[27], bandate[48], bantime[48], ipban[16], idacc;
+		cache_get_field_content_int(0, "unbandate", unban);
+		cache_get_field_content(0, "name", name, 48);
+		cache_get_field_content(0, "admin", admin, 48);
+		cache_get_field_content(0, "reason", reason, 27);
+		cache_get_field_content(0, "bandate", bandate, 48);
+		cache_get_field_content(0, "bantime", bantime, 48);
+		cache_get_field_content(0, "ipban", ipban, 16);
+		idacc = cache_get_field_content_int(0, "idacc");
+		new how = unban;
+		format(query, sizeof(query), "Номер аккаунта:\t%d\nНик забаненного:\t%s\nНик администратора:\t%s\nДней до конца бана:\t%d\nПричина:\t%s\nIP во время бана: %s\nДата бана:\t\t%s %s", idacc, name, admin, how+1, reason, ipban, bandate, bantime);
+        ShowPlayerDialog(playerid, 8823, DIALOG_STYLE_MSGBOX, name, query, "Закрыть", "");
+ }
+	else
+	{
+	    SendClientMessage(playerid, COLOR_GREY, "Данный аккаунт не заблокирован.");
+	}
+	return 1;
+}
+stock CheckGunLic(playerid)
+{
+	if(login_check[playerid] == true)
+	{
+		switch(GetPlayerWeapon(playerid) && GetPlayerAmmo(playerid) > 0)
+		{
+			case 9:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 16:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 17:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 26:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 27:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 28:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 32:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 35:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 36:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 37:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 38:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 39:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 40:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 44:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+			case 45:SendClientMessage(playerid, 0xFF6600AA, "{FF6600}Обнаружено использование чит-программ {FF0000}(aac-code 004)"),ResetPlayerWeapons(playerid), KickEx(playerid);
+		}
+	}
+	return 1;
+}
+stock TextSendClientMessage(playerid,color,str[],radius)
+{
+	new Float:Posw[3];
+	GetPlayerPos(playerid,Posw[0],Posw[1],Posw[2]);
+	foreach(Player, i)
+	{
+		if(!IsPlayerInRangeOfPoint(i,radius,Posw[0],Posw[1],Posw[2]) || !IsPlayerConnected(i))continue;
+		if(GetPlayerInterior(playerid) != GetPlayerInterior(i) || GetPlayerVirtualWorld(playerid) != GetPlayerVirtualWorld(i))continue;
+		SendClientMessage(i,color,str);
+		SetPlayerChatBubble(playerid, str, color, 15.0, 3000);
+	}
+	return 1;
+}
+stock StatusMessage(playerid, str[], textbuble[])
+{
+	new Float:Posw[3];
+	GetPlayerPos(playerid,Posw[0],Posw[1],Posw[2]);
+	foreach(Player, i)
+	{
+		if(!IsPlayerInRangeOfPoint(i,15.0,Posw[0],Posw[1],Posw[2]) || !IsPlayerConnected(i))continue;
+		if(GetPlayerInterior(playerid) != GetPlayerInterior(i) || GetPlayerVirtualWorld(playerid) != GetPlayerVirtualWorld(i))continue;
+		SendClientMessage(i,COLOR_PURPLE,str);
+		SetPlayerChatBubble(playerid, textbuble, 0xdd90ffFF, 15.0, 3000);
+	}
+	return 1;
+}
+stock Actors()
+{
+    actors_bath[0] = CreateActor(171,1071.5292,-3531.1897,16.1670,181.4966);
+    ApplyActorAnimation(actors_bath[0],"DEALER","DEALER_IDLE",4.1,1,0,0,0,0);
+    SetActorVirtualWorld(actors_bath[0], 6);
+    
+	actors_bath[1] = CreateActor(171,1097.8285,-3700.4622,1.8190,89.4414);
+	ApplyActorAnimation(actors_bath[1],"DEALER","DEALER_IDLE",4.1,1,0,0,0,0);
+	SetActorVirtualWorld(actors_bath[1], 6);
+}
+stock CreateText()
+{
+    Create3DTextLabel("Банный\nвеник", 0x66CC66FF, 1022.9978,-3576.5239,18.1778, 20, 6);
+    
+	Create3DTextLabel("Регистрация\nна стрельбу\n(тестовый режим)", 0x01BF01FF, 294.3132,-57.9322,1002.9207, 20, 2, 1);
+	Create3DTextLabel("Управление тиром\n(тестовый режим)", 0xF66B0DFF, 297.1647,-58.4347,1002.9435, 20, 2, 1);
+	Create3DTextLabel("Тир",COLOR_BLUE,-2664.2566,-3.5526,6.1328+1,10.0,0,0);
+	
+	Create3DTextLabel("{009900}Играть в кости:\n{FF8800}/dice", -1, 1133.7780, -1.6493, 1000.6797, 20, 1, 1);
+	Create3DTextLabel("{009900}Играть в кости:\n{FF8800}/dice", -1, 1126.4797, -1.6603, 1000.6797, 20, 1, 1);
+	Create3DTextLabel("{009900}Играть в кости:\n{FF8800}/dice", -1, 1133.7780, -1.6493, 1000.6797, 20, 2, 1);
+	Create3DTextLabel("{009900}Играть в кости:\n{FF8800}/dice", -1, 1126.4797, -1.6603, 1000.6797, 20, 2, 1);
+	Create3DTextLabel("{009900}Играть в кости:\n{FF8800}/dice", -1, 1133.7780, -1.6493, 1000.6797, 20, 3, 1);
+	Create3DTextLabel("{009900}Играть в кости:\n{FF8800}/dice", -1, 1126.4797, -1.6603, 1000.6797, 20, 3, 1);
+	Create3DTextLabel("{009900}Играть в кости:\n{FF8800}/dice", -1, 1133.7780, -1.6493, 1000.6797, 20, 4, 1);
+	Create3DTextLabel("{009900}Играть в кости:\n{FF8800}/dice", -1, 1126.4797, -1.6603, 1000.6797, 20, 4, 1);
+	
+	Create3DTextLabel("{dcdbd6}Меню бара\n\n{6699ff}1. Пиво\n2. Вино\n3. Водка\n4. Коньяк\n5. Виски{00cc66}\n6. Закуска\n7. Сигара", -1, 1142.4344,-3.6728,1002.2045, 20, 1, 1);
+    Create3DTextLabel("{dcdbd6}Меню бара\n\n{6699ff}1. Пиво\n2. Вино\n3. Водка\n4. Коньяк\n5. Виски{00cc66}\n6. Закуска\n7. Сигара", -1, 1142.4344,-3.6728,1002.2045, 20, 2, 1);
+    Create3DTextLabel("{dcdbd6}Меню бара\n\n{6699ff}1. Пиво\n2. Вино\n3. Водка\n4. Коньяк\n5. Виски{00cc66}\n6. Закуска\n7. Сигара", -1, 1142.4344,-3.6728,1002.2045, 20, 3, 1);
+    Create3DTextLabel("{dcdbd6}Меню бара\n\n{6699ff}1. Пиво\n2. Вино\n3. Водка\n4. Коньяк\n5. Виски{00cc66}\n6. Закуска\n7. Сигара", -1, 1142.4344,-3.6728,1002.2045, 20, 4, 1);
+    
+	Create3DTextLabel("Раздел для новичков\n{ffff00}Помощь по игре",0x0099FFFF,1201.2673,-1767.8651,13.5859+1,15.0,0,1);
+	Create3DTextLabel("Раздел для новичков\n{ffff00}Помощь по игре",0x0099FFFF,1760.0277,-1884.8682,13.5556+1,15.0,0,1);
+
+	Create3DTextLabel("gate",0x0066FFFF,-1525.9426,484.1647,7.1797+1,15.0,0,1);
+	Create3DTextLabel("/gate",0x0066FFFF,-2276.1694,2348.0596,4.8125+1,15.0,0,1);
+	Create3DTextLabel("/gate",0x0066FFFF,-2267.4082,2357.4807,4.9473+1,15.0,0,1);
+	Create3DTextLabel("/gate",0x0066FFFF,420.1321,2567.3557,18.0313+1,15.0,0,1);
+	Create3DTextLabel("/gate",0x0066FFFF,443.7910,2556.1707,18.0313+1,15.0,0,1);
+	Create3DTextLabel("/gate",0x0066FFFF,296.0694,2564.8071,18.0313+1,15.0,0,1);
+	Create3DTextLabel("/gate",0x0066FFFF,275.0680,2565.3267,18.0313+1,15.0,0,1);
+	Create3DTextLabel("/gate",0x0066FFFF,288.1663,1812.5587,17.6406+1,15.0,0,1);
+	Create3DTextLabel("/gate",0x0066FFFF,282.3727,1813.4115,17.6406+1,15.0,0,1);
+	Create3DTextLabel("/gate",0x0066FFFF,349.9460,1803.3724,18.5794+1,15.0,0,1);
+	Create3DTextLabel("/gate",0x0066FFFF,339.8112,1792.0803,18.0783+1,15.0,0,1);
+
+	Create3DTextLabel("/open",0x0066FFFF,-1700.9500,689.1686,24.8906+1,15.0,0,1);
+	Create3DTextLabel("/open",0x0066FFFF,-1572.7175,657.3003,7.1875+1,15.0,0,1);
+	Create3DTextLabel("/open",0x0066FFFF,2341.9004,2423.1523,10.8203+1,15.0,0,1);
+	Create3DTextLabel("/open",0x0066FFFF,1543.8284,-1631.9226,13.3828+1,15.0,0,1);
+
+    Create3DTextLabel("Покупка наркотиков (Для бандитов)",0x0099FFFF,-1458.8835,-3925.0059,8.0428+1,15.0,0,1);
+
+	Create3DTextLabel("Банк \"Лос Сантос\"",0x0099FFFF,1419.1854,-1623.7562,14.6598,5.0,0,0);
+	Create3DTextLabel("Банк \"Сан Фиерро\"",0x0099FFFF,-1492.1317,920.0912,8.3895,5.0,0,0);
+	Create3DTextLabel("Банк",0x0099FFFF,2303.5818,-16.1618,27.6503,5.0,0,0);
+	
+	Create3DTextLabel("Здание МВД\n{FF9933}Служебный проезд\n\n{FFFF99}/open",0x3399FFFF,-2042.5206,494.9169,35.1641+1,15.0,0,1);
+	
+	Create3DTextLabel("Оружейный магазин\nЛос-Сантоса №1",COLOR_BLUE,1368.9552,-1279.7527,13.5469,10.0,0,0);
+	Create3DTextLabel("Оружейный магазин\nЛос-Сантоса №2",COLOR_BLUE,2400.4758,-1981.9933,13.5469,10.0,0,0);
+	Create3DTextLabel("Оружейный магазин\nСан-Фиерро",COLOR_BLUE,-2625.8848,208.2403,4.8125,10.0,0,0);
+	Create3DTextLabel("Оружейный магазин\nЛас-Вентураса",COLOR_BLUE,2159.5432,943.2299,10.8203,10.0,0,0);
+	Create3DTextLabel("Оружейный магазин\nAngel Pine",COLOR_BLUE,-2093.6851,-2464.9202,30.6250,10.0,0,0);
+	Create3DTextLabel("Оружейный магазин\nFort Carson",COLOR_BLUE,-316.1607,829.8970,14.2422,10.0,0,0);
+	
+	Create3DTextLabel("Казино\n\"Калигула\"",COLOR_BLUE,2196.9656,1677.1598,12.3672,10.0,0,0);
+	Create3DTextLabel("Казино\n\"Четыре дракона\"",COLOR_BLUE,2019.3192,1007.7440,10.8203,10.0,0,0)
+	;
+	Create3DTextLabel("Олимпийский\nстадион",COLOR_BLUE,2694.0613,-1708.8254,11.8478,10.0,0,0);
+	Create3DTextLabel("Стадион\nСан-Фиерро",COLOR_BLUE,-2109.6636,-444.1335,38.7344,10.0,0,0);
+	Create3DTextLabel("Стадион\nЛас-Вентураса",COLOR_BLUE,1094.0519,1597.0002,12.5469,10.0,0,0);
+	
+	Create3DTextLabel("Турбаза\nAngel Pine",COLOR_BLUE,-2191.9949,-2255.1226,30.6955,10.0,0,0);
+	
+	Create3DTextLabel("Библиотека",COLOR_BLUE,1122.7111,-2037.0060,69.8942,10.0,0,0);
+
+	Create3DTextLabel("Оплата\n{b9af21}дома\nбизнеса\nАЗС", 0x86A678FF, -2166.3533,645.3343,1054.0183, 20, 1, 1);
+	Create3DTextLabel("Оплата\n{b9af21}дома\nбизнеса\nАЗС", 0x86A678FF, -2166.3533,645.3343,1054.0183, 20, 2, 1);
+	Create3DTextLabel("Оплата\n{b9af21}дома\nбизнеса\nАЗС", 0x86A678FF, 2316.2820,-12.7116,27.8585, 20, 0, 1);
+	Create3DTextLabel("Оплата\n{b9af21}дома\nбизнеса\nАЗС", 0x86A678FF, 1490.6698,1305.5652,1094.4221, 20, 15, 1);
+	Create3DTextLabel("Оплата\n{b9af21}дома\nбизнеса\nАЗС", 0x86A678FF, 1490.6698,1305.5652,1094.4221, 20, 16, 1);
+	Create3DTextLabel("Оплата\n{b9af21}дома\nбизнеса\nАЗС", 0x86A678FF, 1490.6698,1305.5652,1094.4221, 20, 17, 1);
+
+	Create3DTextLabel("/bank", 0x00cc00FF, -2159.2856,640.3774,1053.6573, 20, 1, 1);
+	Create3DTextLabel("/bank", 0x00cc00FF, -2159.2856,640.3774,1053.6573, 20, 2, 1);
+	Create3DTextLabel("/bank", 0x00cc00FF, 2308.9656,-13.2480,27.8585, 20, 0, 1);
+	
+	Create3DTextLabel("Салон сотовой связи", 0x0099FFFF, 1411.5261,-1699.5725,13.5395, 10, 0, 1);
+
+    Create3DTextLabel("Министерство\nвнутренних дел", 0x0099FFFF, -2057.6824,455.1472,35.1719, 10, 0, 1);
+    Create3DTextLabel("Министерство\nздравоохранения", 0x0099FFFF, -2719.3958,-319.1943,7.8438, 10, 0, 1);
+
+	Create3DTextLabel("Городская больница\nЛос - Сантоса", 0x3196ffFF, 1172.0878,-1321.5000,15.3989+1, 10, 0, 1);
+	Create3DTextLabel("Городская больница\nЛас - Вентурас", 0x3196ffFF, 1607.4028,1815.2421,11.8203, 10, 0, 1);
+	Create3DTextLabel("Городская больница\nСан - Фиерро", 0x3196ffFF, -2655.0955,640.1652,15.4545, 10, 0, 1);
+	
+	Create3DTextLabel("Полицейский департамент\nЛос-Сантос",0x0099FFFF,1555.5016,-1675.5809,16.1953+1,15.0,0,1);
+	Create3DTextLabel("Полицейский департамент\nЛас-Вентурас",0x0099FFFF,2287.0259,2432.3677,10.8203+1,15.0,0,1);
+	Create3DTextLabel("Полицейский департамент\nСан-Фиерро",0x0099FFFF,-1605.6232,710.2721,13.8672+1,15.0,0,1);
+	
+	Create3DTextLabel("ФБР",0x0099FFFF,-2456.1504,503.8978,30.0781+1,15.0,0,1);
+
+	Create3DTextLabel("Радиоцентр\nЛос-Сантос",0x0099FFFF,1699.7339,-1667.8046,20.2078+1,15.0,0,1);
+	Create3DTextLabel("Радиоцентр\nСан-Фиерро",0x0099FFFF,-1806.7040,530.5848,35.1641+1,15.0,0,1);
+	Create3DTextLabel("Радиоцентр\nЛас-Вентурас",0x0099FFFF,2127.5288,2380.1223,10.8203+1,15.0,0,1);
+
+	Create3DTextLabel("Русская Мафия",COLOR_RM,937.0819,1733.2162,8.8516+1,15.0,0,1);
+	Create3DTextLabel("La Cosa Nostra",COLOR_LCN,1456.1318,2773.3865,10.8203+1,15.0,0,1);
+	Create3DTextLabel("Yakuza",COLOR_YAKUZA,2597.6604,1900.9048,11.0312+1,15.0,0,1);
+	
+    Create3DTextLabel("Покупка\nтранспорта",0xce9a00FF,2458.5381,1326.4189,10.8203+1,15.0,0,1);
+    Create3DTextLabel("Покупка\nтранспорта",0xce9a00FF,-2159.1272,640.8480,1052.3817+1,15.0,3,1);
+    Create3DTextLabel("Покупка\nтранспорта",0xce9a00FF,-1950.8760,295.3822,35.4688+1,15.0,0,1);
+    Create3DTextLabel("Покупка\nтранспорта",0xce9a00FF,-1656.3135,1209.9270,7.2500+1,15.0,0,1);
+    Create3DTextLabel("Покупка\nтранспорта",0xce9a00FF,-2159.1272,640.8480,1052.3817+1,15.0,4,1);
+    
+ 	Create3DTextLabel("Покрасочные работы\n{FFFFFF}Стоимость: {FF9A00}500$",0x3165FFFF,2456.4810,1324.9464,11.3203,15.0,0,1);
+ 	Create3DTextLabel("Покрасочные работы\n{FFFFFF}Стоимость: {FF9A00}500$",0x3165FFFF,-2161.1477,640.6380,1052.3817+1,15.0,3,1);
+ 	Create3DTextLabel("Покрасочные работы\n{FFFFFF}Стоимость: {FF9A00}500$",0x3165FFFF,-2161.1477,640.6380,1052.3817+1,15.0,4,1);
+	Create3DTextLabel("Покрасочные работы\n{FFFFFF}Стоимость: {FF9A00}500$",0x3165FFFF,-1950.4117,290.9186,35.4688+1,15.0,0,1);
+	Create3DTextLabel("Покрасочные работы\n{FFFFFF}Стоимость: {FF9A00}500$",0x3165FFFF,-1659.4618,1209.9100,7.2500+1,15.0,0,1);
+    //====================================================================================================
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,2398.2808,2424.5396,10.8203,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,2021.5198,1016.0516,10.8203,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,2843.2590,1294.3252,11.3906,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,1028.3756,1024.6317,11.0000,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,698.4319,1967.9021,5.5391,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,-1487.0986,2657.7542,55.8359,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,-2326.5610,2375.0249,5.8395,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,-1981.3364,132.9333,27.6875,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,-2035.6174,-101.3923,35.1641,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,-2764.8296,391.1270,4.4027,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,-2182.6692,-2265.3416,30.6250,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,1144.1509,-1765.1309,13.6219,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,1457.1650,-1754.3446,13.5469,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,1752.7277,-1884.8665,13.5573,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,1291.0980,334.8214,19.5547,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,221.8691,-138.2097,1.5781,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,671.4304,-457.5573,16.5363,7.0,0,1);
+	Create3DTextLabel("{008000}Банкомат\n{FFFF00}Нажмите ALT",COLOR_GREEN,-69.3843,1208.3571,19.7422,7.0,0,1);
+
+	Create3DTextLabel("Казарма", 0x009cffFF, -2271.8955,2404.7661,4.9461+1, 10, 0, 1);
+	Create3DTextLabel("Казарма", 0x009cffFF, 372.6318,2570.0623,17.4104+1, 10, 0, 1);
+	Create3DTextLabel("Казарма", 0x009cffFF, 167.5433,1882.7861,21.4476+1, 10, 0, 1);
+	
+	Create3DTextLabel("Центр управления\nполётами", 0x009cffFF, 319.2881,2569.7759,16.4991+1, 10, 0, 1);
+	
+	Create3DTextLabel("Военный завод\n{66cc99}Склад торпед", 0x3399feFF, -2281.9548,2288.3967,4.9739+1, 10, 0, 1);
+	
+	Create3DTextLabel("Пожарная станция\nЛос-Сантос", 0x009cffFF, 1755.6335,-1471.5686,13.5442+1, 10, 0, 1);
+	Create3DTextLabel("Пожарная станция\nСан-Фиерро", 0x009cffFF, -2026.9408,67.1308,28.6916+1, 10, 0, 1);
+	Create3DTextLabel("Пожарная станция\nЛас-Вентурас", 0x009cffFF, 1737.6130,2086.1426,12.3551+1, 10, 0, 1);
+	
+	Create3DTextLabel("Аэропорт", 0x009cffFF, 1685.6862,-2335.4973,13.5469+1, 10, 0, 1);
+	Create3DTextLabel("Аэропорт", 0x009cffFF, 1685.7601,-2431.9509,13.5547+1, 10, 0, 1);
+	Create3DTextLabel("Аэропорт", 0x009cffFF, -1422.1686,-286.1115,14.1484+1, 10, 0, 1);
+	Create3DTextLabel("Аэропорт", 0x009cffFF, -1384.6866,-254.0480,14.1440+1, 10, 0, 1);
+	Create3DTextLabel("Аэропорт", 0x009cffFF, 1672.5378,1447.8728,10.7881+1, 10, 0, 1);
+	Create3DTextLabel("Аэропорт", 0x009cffFF, 1598.2487,1448.2087,10.8281+1, 10, 0, 1);
+	
+	Create3DTextLabel("Зрительный зал", 0x009cffFF, -493.1520,-2598.1833,1483.9840+2, 10, 1, 1);
+	Create3DTextLabel("Служебный вход", 0x009cffFF, -504.8910,-2568.9597,1483.9840+2, 10, 1, 1);
+	Create3DTextLabel("Напитки", 0x66CC66FF, -509.0933,-2586.7759,1483.9840+1, 10, 1, 1);
+	Create3DTextLabel("Выпечка", 0x66CC66FF, 506.9153,-2576.7310,1483.9840+1, 10, 1, 1);
+	
+	Create3DTextLabel("Телевизионный\nцентр",COLOR_BLUE,1788.4026,-1295.4651,13.4695,10.0,0,0);//ТВ центр
+
+	Create3DTextLabel("Склад",0x0099FFFF,1265.9102,-775.1544,1084.0078+2,15.0,93,1);
+	Create3DTextLabel("Склад",0x0099FFFF,1265.9102,-775.1544,1084.0078+2,15.0,94,1);
+	Create3DTextLabel("Склад",0x0099FFFF,1265.9102,-775.1544,1084.0078+2,15.0,95,1);
+	
+	Create3DTextLabel("Оружейная",0x0099FFFF,1261.9752,-774.9162,1084.0078+2,15.0,93,1);
+	Create3DTextLabel("Оружейная",0x0099FFFF,1261.9752,-774.9162,1084.0078+2,15.0,94,1);
+	Create3DTextLabel("Оружейная",0x0099FFFF,1261.9752,-774.9162,1084.0078+2,15.0,95,1);
+	
+	Create3DTextLabel("Столовая",0x0099FFFF,422.6188,2547.9111,16.2752+1,15.0,0,1);
+	Create3DTextLabel("Столовая",0x0099FFFF,177.0969,1842.8762,17.6406+1,15.0,0,1);
+	Create3DTextLabel("Столовая",0x0099FFFF,-2236.9302,2354.1904,4.9799+1,15.0,0,1);
+	
+	Create3DTextLabel("Администрация\nпрезидента", 0x0099FFFF, 952.5278,-909.1177,45.7656+1, 15, 0, 0);
+	
+	Create3DTextLabel("Автошкола", 0x0099FFFF, -2026.5903,-102.0663,35.1641+1, 15, 0, 0);
+	
+	Create3DTextLabel("Мэрия города\nЛос-Сантос", 0x0099FFFF, 1481.0404,-1772.3137,18.7958+1, 10, 0, 1);
+	Create3DTextLabel("Мэрия города\nЛас-Вентурас", 0x0099FFFF, 2388.9980,2465.9695,10.8203+1, 10, 0, 1);
+	Create3DTextLabel("Мэрия города\nСан-Фиерро", 0x0099FFFF, -2766.5486,375.5259,6.3347+1, 10, 0, 1);
+	
+	Create3DTextLabel("Посадочная площадка города Лос-Сантос", COLOR_GRAD, 2050.6350,-2541.6021,13.5469+1, 10, 0, 1);
+	Create3DTextLabel("Посадочная площадка города Сан-Фиерро", COLOR_GRAD, -1361.5537,-57.3866,14.1484+1, 10, 0, 1);
+	Create3DTextLabel("Посадочная площадка города Лас-Вентурас", COLOR_GRAD, 1420.0397,1442.6887,10.8203+1, 10, 0, 1);
+	
+	Create3DTextLabel("Покупка билетов в городе Лос-Сантос", COLOR_GRAD, 1767.6105,-2431.9500,13.5547+1, 10, 0, 1);
+	Create3DTextLabel("Покупка билетов в городе Сан-Фиерро", COLOR_GRAD, -1227.1997,54.8605,14.1322+1, 10, 0, 1);
+	Create3DTextLabel("Покупка билетов в городе Лас-Вентурас", COLOR_GRAD, 1676.4236,1436.2278,10.7813+1, 10, 0, 1);
+	
+	Create3DTextLabel("Grove Street", COLOR_GROVE, 2514.3403,-1691.5911,14.0460+1, 10, 0, 1);
+	Create3DTextLabel("The Ballas", COLOR_BALLAS, 2022.9318,-1120.2645,26.4210+1, 10, 0, 1);
+	Create3DTextLabel("Varios Los Aztecas", COLOR_AZTEC, 2185.7717,-1815.2280,13.5469+1, 10, 0, 1);
+	Create3DTextLabel("Los Santos Vagos", COLOR_VAGOS, 2756.3645,-1182.8091,69.4035+1, 10, 0, 1);
+	Create3DTextLabel("The Rifa", COLOR_RIFA, 2787.0764,-1926.1918,13.5469+1, 10, 0, 1);
+}
