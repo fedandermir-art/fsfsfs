@@ -1,0 +1,4204 @@
+AirdropCommand:
+
+package org.exampl.npcplugin_shahed.commands;
+
+import org.exampl.npcplugin_shahed.data.AirdropLoot;
+import org.exampl.npcplugin_shahed.gui.AirdropGUI;
+import org.exampl.npcplugin_shahed.gui.AirdropNpcGUI;
+import org.exampl.npcplugin_shahed.manager.AirdropManager;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.*;
+
+public class AirdropCommand implements CommandExecutor, TabCompleter, Listener {
+
+    private final AirdropManager airdropManager;
+    private final AirdropGUI airdropGUI;
+    private final AirdropNpcGUI airdropNpcGUI;
+
+    private final Map<UUID, String> editingLoot = new HashMap<>();
+
+    private static final String LOOT_SELECT_TITLE = "§6§lВыберите тип лута";
+    private static final String LOOT_EDIT_PREFIX = "§6§lЛут: ";
+
+    public AirdropCommand(AirdropManager airdropManager, AirdropGUI airdropGUI, AirdropNpcGUI airdropNpcGUI) {
+        this.airdropManager = airdropManager;
+        this.airdropGUI = airdropGUI;
+        this.airdropNpcGUI = airdropNpcGUI;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("§cТолько для игроков!");
+            return true;
+        }
+
+        Player player = (Player) sender;
+        String cmdName = command.getName().toLowerCase();
+
+        switch (cmdName) {
+            case "airdrop":
+                return handleMainCommand(player, args);
+            case "airdropspawn":
+                return handleSpawn(player);
+            case "airdropspawnhere":
+                return handleSpawnHere(player);
+            case "airdropsettime":
+                return handleSetTime(player, args);
+            case "airdroptime":
+                return handleTime(player);
+            case "airdropinfo":
+                return handleInfo(player);
+            case "airdropsetcenter":
+                return handleSetCenter(player);
+            case "airdropchance":
+                return handleChance(player, args);
+            case "airdroploot":
+                return handleLoot(player, args);
+            case "airdropsetnpc":
+                return handleSetNpc(player, args);
+            case "airdropguards":
+                return handleGuards(player, args);
+            default:
+                sendHelp(player);
+                return true;
+        }
+    }
+
+    private boolean handleMainCommand(Player player, String[] args) {
+        if (args.length == 0) {
+            sendHelp(player);
+            return true;
+        }
+
+        String sub = args[0].toLowerCase();
+        String[] subArgs = args.length > 1 ? Arrays.copyOfRange(args, 1, args.length) : new String[0];
+
+        switch (sub) {
+            case "spawn":
+            case "force":
+                return handleSpawn(player);
+            case "here":
+                return handleSpawnHere(player);
+            case "setcenter":
+                return handleSetCenter(player);
+            case "settime":
+            case "setinterval":
+                return handleSetTime(player, subArgs);
+            case "time":
+                return handleTime(player);
+            case "info":
+            case "status":
+                return handleInfo(player);
+            case "remove":
+            case "delete":
+            case "stop":
+                return handleRemove(player);
+            case "tp":
+            case "teleport":
+                return handleTeleport(player);
+            case "guards":
+                return handleGuards(player, subArgs);
+            case "chance":
+                return handleChance(player, subArgs);
+            case "setnpc":
+                return handleSetNpc(player, subArgs);
+            case "loot":
+                return handleLoot(player, subArgs);
+            default:
+                sendHelp(player);
+                return true;
+        }
+    }
+
+    private boolean handleSpawn(Player player) {
+        if (!player.hasPermission("airdrop.admin")) {
+            player.sendMessage("§c§l✘ Нет прав!");
+            return true;
+        }
+        airdropManager.forceSpawn(player);
+        player.sendMessage("§a§l✔ Аирдроп заспавнен!");
+        return true;
+    }
+
+    private boolean handleSpawnHere(Player player) {
+        if (!player.hasPermission("airdrop.admin")) {
+            player.sendMessage("§c§l✘ Нет прав!");
+            return true;
+        }
+        airdropManager.spawnHere(player);
+        player.sendMessage("§a§l✔ Аирдроп заспавнен здесь!");
+        return true;
+    }
+
+    private boolean handleSetTime(Player player, String[] args) {
+        if (!player.hasPermission("airdrop.admin")) {
+            player.sendMessage("§c§l✘ Нет прав!");
+            return true;
+        }
+        if (args.length < 1) {
+            player.sendMessage("§7Текущий интервал: §f" + airdropManager.getInterval() + " мин");
+            player.sendMessage("§7Использование: §f/airdropsettime <минуты>");
+            return true;
+        }
+        try {
+            int minutes = Integer.parseInt(args[0]);
+            if (minutes < 1 || minutes > 1440) {
+                player.sendMessage("§c§l✘ От 1 до 1440 минут!");
+                return true;
+            }
+            airdropManager.setInterval(minutes);
+            player.sendMessage("§a§l✔ Интервал: §f" + minutes + " мин");
+        } catch (NumberFormatException e) {
+            player.sendMessage("§c§l✘ Введите число!");
+        }
+        return true;
+    }
+
+    private boolean handleTime(Player player) {
+        player.sendMessage("§6До аирдропа: " + airdropManager.getFormattedTime());
+        return true;
+    }
+
+    private boolean handleInfo(Player player) {
+        player.sendMessage("");
+        player.sendMessage("§6§l▬▬▬▬▬▬▬▬ АИРДРОП ▬▬▬▬▬▬▬▬");
+        if (airdropManager.isAirdropActive()) {
+            player.sendMessage("§7Статус: §a§lАКТИВЕН");
+            player.sendMessage("§7Тип: §f" + airdropManager.getCurrentLootType());
+            player.sendMessage("§7Охранников: §c" + airdropManager.getAliveGuardsCount());
+            if (airdropManager.getCurrentLocation() != null) {
+                player.sendMessage("§7Координаты: §eX:" + airdropManager.getCurrentLocation().getBlockX() +
+                        " Y:" + airdropManager.getCurrentLocation().getBlockY() +
+                        " Z:" + airdropManager.getCurrentLocation().getBlockZ());
+            }
+        } else {
+            player.sendMessage("§7Статус: §c§lНЕАКТИВЕН");
+            player.sendMessage("§7До спавна: " + airdropManager.getFormattedTime());
+        }
+        player.sendMessage("§7Интервал: §f" + airdropManager.getInterval() + " мин");
+        player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+        return true;
+    }
+
+    private boolean handleSetCenter(Player player) {
+        if (!player.hasPermission("airdrop.admin")) {
+            player.sendMessage("§c§l✘ Нет прав!");
+            return true;
+        }
+        airdropManager.setCenter(player.getWorld(), player.getLocation().getBlockX(), player.getLocation().getBlockZ());
+        player.sendMessage("§a§l✔ Центр установлен!");
+        player.sendMessage("§7Мир: §f" + player.getWorld().getName());
+        player.sendMessage("§7X: §f" + player.getLocation().getBlockX() + " §7Z: §f" + player.getLocation().getBlockZ());
+        return true;
+    }
+
+    private boolean handleChance(Player player, String[] args) {
+        if (!player.hasPermission("airdrop.admin")) {
+            player.sendMessage("§c§l✘ Нет прав!");
+            return true;
+        }
+        if (args.length < 2) {
+            AirdropLoot c = airdropManager.getLoot("common");
+            AirdropLoot r = airdropManager.getLoot("rare");
+            AirdropLoot l = airdropManager.getLoot("legendary");
+            player.sendMessage("§7Common: §f" + (c != null ? c.getChance() : 60) + "%");
+            player.sendMessage("§9Rare: §f" + (r != null ? r.getChance() : 30) + "%");
+            player.sendMessage("§6Legendary: §f" + (l != null ? l.getChance() : 10) + "%");
+            player.sendMessage("§7Использование: §f/airdropchance <тип> <шанс>");
+            return true;
+        }
+        String type = args[0].toLowerCase();
+        if (!type.equals("common") && !type.equals("rare") && !type.equals("legendary")) {
+            player.sendMessage("§c§l✘ Типы: common, rare, legendary");
+            return true;
+        }
+        try {
+            int chance = Integer.parseInt(args[1]);
+            if (chance < 0 || chance > 100) {
+                player.sendMessage("§c§l✘ От 0 до 100!");
+                return true;
+            }
+            airdropManager.setLootChance(type, chance);
+            player.sendMessage("§a§l✔ Шанс §f" + type + "§a: §f" + chance + "%");
+        } catch (NumberFormatException e) {
+            player.sendMessage("§c§l✘ Введите число!");
+        }
+        return true;
+    }
+
+    // ========================================
+    // /airdroploot - ОТКРЫВАЕТ GUI
+    // ========================================
+
+    private boolean handleLoot(Player player, String[] args) {
+        if (!player.hasPermission("airdrop.admin")) {
+            player.sendMessage("§c§l✘ Нет прав!");
+            return true;
+        }
+
+        if (args.length >= 1) {
+            String type = args[0].toLowerCase();
+            if (type.equals("common") || type.equals("rare") || type.equals("legendary")) {
+                openLootEditor(player, type);
+                return true;
+            }
+        }
+
+        openLootSelector(player);
+        return true;
+    }
+
+    private void openLootSelector(Player player) {
+        Inventory inv = Bukkit.createInventory(null, 27, LOOT_SELECT_TITLE);
+
+        // Common
+        ItemStack common = new ItemStack(Material.WHITE_SHULKER_BOX);
+        ItemMeta cm = common.getItemMeta();
+        cm.setDisplayName("§f§lCOMMON");
+        AirdropLoot cl = airdropManager.getLoot("common");
+        cm.setLore(Arrays.asList("", "§7Шанс: §f" + (cl != null ? cl.getChance() : 60) + "%",
+                "§7Предметов: §f" + (cl != null ? cl.getItems().size() : 0), "", "§eНажми для редактирования"));
+        common.setItemMeta(cm);
+        inv.setItem(11, common);
+
+        // Rare
+        ItemStack rare = new ItemStack(Material.BLUE_SHULKER_BOX);
+        ItemMeta rm = rare.getItemMeta();
+        rm.setDisplayName("§9§lRARE");
+        AirdropLoot rl = airdropManager.getLoot("rare");
+        rm.setLore(Arrays.asList("", "§7Шанс: §f" + (rl != null ? rl.getChance() : 30) + "%",
+                "§7Предметов: §f" + (rl != null ? rl.getItems().size() : 0), "", "§eНажми для редактирования"));
+        rare.setItemMeta(rm);
+        inv.setItem(13, rare);
+
+        // Legendary
+        ItemStack legendary = new ItemStack(Material.ORANGE_SHULKER_BOX);
+        ItemMeta lm = legendary.getItemMeta();
+        lm.setDisplayName("§6§lLEGENDARY");
+        AirdropLoot ll = airdropManager.getLoot("legendary");
+        lm.setLore(Arrays.asList("", "§7Шанс: §f" + (ll != null ? ll.getChance() : 10) + "%",
+                "§7Предметов: §f" + (ll != null ? ll.getItems().size() : 0), "", "§eНажми для редактирования"));
+        legendary.setItemMeta(lm);
+        inv.setItem(15, legendary);
+
+        // Стекло
+        ItemStack glass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta gm = glass.getItemMeta();
+        gm.setDisplayName(" ");
+        glass.setItemMeta(gm);
+        for (int i = 0; i < 27; i++) {
+            if (inv.getItem(i) == null) inv.setItem(i, glass);
+        }
+
+        player.openInventory(inv);
+    }
+
+    private void openLootEditor(Player player, String type) {
+        String color;
+        String name;
+        switch (type) {
+            case "rare":
+                color = "§9";
+                name = "RARE";
+                break;
+            case "legendary":
+                color = "§6";
+                name = "LEGENDARY";
+                break;
+            default:
+                color = "§f";
+                name = "COMMON";
+                break;
+        }
+
+        Inventory inv = Bukkit.createInventory(null, 54, LOOT_EDIT_PREFIX + color + name);
+
+        AirdropLoot loot = airdropManager.getLoot(type);
+        if (loot != null && loot.getItems() != null) {
+            int slot = 0;
+            for (ItemStack item : loot.getItems()) {
+                if (slot >= 45) break;
+                if (item != null && item.getType() != Material.AIR) {
+                    inv.setItem(slot++, item.clone());
+                }
+            }
+        }
+
+        // Инфо кнопка
+        ItemStack info = new ItemStack(Material.PAPER);
+        ItemMeta im = info.getItemMeta();
+        im.setDisplayName("§e§lИнфо");
+        im.setLore(Arrays.asList("", "§7Положи предметы сюда", "§7При закрытии сохранится", "", "§aСлоты 1-45 для лута"));
+        info.setItemMeta(im);
+        inv.setItem(49, info);
+
+        // Стекло снизу
+        ItemStack glass = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta gm = glass.getItemMeta();
+        gm.setDisplayName(" ");
+        glass.setItemMeta(gm);
+        for (int i = 45; i < 54; i++) {
+            if (inv.getItem(i) == null) inv.setItem(i, glass);
+        }
+
+        editingLoot.put(player.getUniqueId(), type);
+        player.openInventory(inv);
+        player.sendMessage(color + "§lРедактирование лута: " + name);
+    }
+
+    // ========================================
+    // ОБРАБОТКА КЛИКОВ
+    // ========================================
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        Player player = (Player) event.getWhoClicked();
+        String title = event.getView().getTitle();
+
+        // Меню выбора типа
+        if (title.equals(LOOT_SELECT_TITLE)) {
+            event.setCancelled(true);
+
+            ItemStack clicked = event.getCurrentItem();
+            if (clicked == null || clicked.getType() == Material.AIR) return;
+            if (clicked.getType() == Material.GRAY_STAINED_GLASS_PANE) return;
+
+            String type = null;
+            if (clicked.getType() == Material.WHITE_SHULKER_BOX) type = "common";
+            else if (clicked.getType() == Material.BLUE_SHULKER_BOX) type = "rare";
+            else if (clicked.getType() == Material.ORANGE_SHULKER_BOX) type = "legendary";
+
+            if (type != null) {
+                final String finalType = type;
+                // Закрываем и открываем редактор
+                Bukkit.getScheduler().runTaskLater(
+                        Bukkit.getPluginManager().getPlugin("CustomNPC"),
+                        () -> openLootEditor(player, finalType),
+                        1L
+                );
+            }
+            return;
+        }
+
+        // Редактор лута - блокируем нижний ряд
+        if (title.startsWith(LOOT_EDIT_PREFIX)) {
+            int slot = event.getRawSlot();
+            if (slot >= 45 && slot <= 53) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    // ========================================
+    // СОХРАНЕНИЕ ПРИ ЗАКРЫТИИ
+    // ========================================
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player)) return;
+        Player player = (Player) event.getPlayer();
+        String title = event.getView().getTitle();
+
+        if (!title.startsWith(LOOT_EDIT_PREFIX)) return;
+
+        String type = editingLoot.remove(player.getUniqueId());
+        if (type == null) return;
+
+        Inventory inv = event.getInventory();
+        List<ItemStack> items = new ArrayList<>();
+
+        for (int i = 0; i < 45; i++) {
+            ItemStack item = inv.getItem(i);
+            if (item != null && item.getType() != Material.AIR) {
+                items.add(item.clone());
+            }
+        }
+
+        AirdropLoot loot = airdropManager.getLoot(type);
+        if (loot != null) {
+            loot.clearItems();
+            for (ItemStack item : items) {
+                loot.addItem(item);
+            }
+            airdropManager.saveLootConfig();
+
+            String color;
+            switch (type) {
+                case "rare": color = "§9"; break;
+                case "legendary": color = "§6"; break;
+                default: color = "§f"; break;
+            }
+            player.sendMessage(color + "§l✔ Лут " + type.toUpperCase() + " сохранён! §7(" + items.size() + " предметов)");
+        }
+    }
+
+    private boolean handleSetNpc(Player player, String[] args) {
+        if (!player.hasPermission("airdrop.admin")) {
+            player.sendMessage("§c§l✘ Нет прав!");
+            return true;
+        }
+        if (args.length < 2) {
+            Map<String, String> presets = airdropManager.getAllNpcPresets();
+            player.sendMessage("§7Common: §f" + presets.getOrDefault("common", "нет"));
+            player.sendMessage("§9Rare: §f" + presets.getOrDefault("rare", "нет"));
+            player.sendMessage("§6Legendary: §f" + presets.getOrDefault("legendary", "нет"));
+            player.sendMessage("§7Использование: §f/airdropsetnpc <тип> <пресет>");
+            return true;
+        }
+        String type = args[0].toLowerCase();
+        if (!type.equals("common") && !type.equals("rare") && !type.equals("legendary")) {
+            player.sendMessage("§c§l✘ Типы: common, rare, legendary");
+            return true;
+        }
+        airdropManager.setNpcPreset(type, args[1]);
+        player.sendMessage("§a§l✔ NPC для §f" + type + "§a: §f" + args[1]);
+        return true;
+    }
+
+    private boolean handleGuards(Player player, String[] args) {
+        if (!player.hasPermission("airdrop.admin")) {
+            player.sendMessage("§c§l✘ Нет прав!");
+            return true;
+        }
+        if (args.length < 2) {
+            player.sendMessage("§7Common: §f" + airdropManager.getGuardCount("common"));
+            player.sendMessage("§9Rare: §f" + airdropManager.getGuardCount("rare"));
+            player.sendMessage("§6Legendary: §f" + airdropManager.getGuardCount("legendary"));
+            player.sendMessage("§7Использование: §f/airdropguards <тип> <количество>");
+            return true;
+        }
+        String type = args[0].toLowerCase();
+        if (!type.equals("common") && !type.equals("rare") && !type.equals("legendary")) {
+            player.sendMessage("§c§l✘ Типы: common, rare, legendary");
+            return true;
+        }
+        try {
+            int count = Integer.parseInt(args[1]);
+            if (count < 0 || count > 10) {
+                player.sendMessage("§c§l✘ От 0 до 10!");
+                return true;
+            }
+            airdropManager.setGuardCount(type, count);
+            player.sendMessage("§a§l✔ Охранники §f" + type + "§a: §f" + count);
+        } catch (NumberFormatException e) {
+            player.sendMessage("§c§l✘ Введите число!");
+        }
+        return true;
+    }
+
+    private boolean handleRemove(Player player) {
+        if (!player.hasPermission("airdrop.admin")) {
+            player.sendMessage("§c§l✘ Нет прав!");
+            return true;
+        }
+        if (!airdropManager.isAirdropActive()) {
+            player.sendMessage("§c§l✘ Аирдроп не активен!");
+            return true;
+        }
+        airdropManager.removeAirdrop();
+        player.sendMessage("§a§l✔ Аирдроп удалён!");
+        return true;
+    }
+
+    private boolean handleTeleport(Player player) {
+        if (!airdropManager.isAirdropActive() || airdropManager.getCurrentLocation() == null) {
+            player.sendMessage("§c§l✘ Аирдроп не активен!");
+            return true;
+        }
+        player.teleport(airdropManager.getCurrentLocation().clone().add(0, 2, 0));
+        player.sendMessage("§a§l✔ Телепортирован!");
+        return true;
+    }
+
+    private void sendHelp(Player player) {
+        player.sendMessage("");
+        player.sendMessage("§6§l▬▬▬▬▬▬▬▬ АИРДРОП ▬▬▬▬▬▬▬▬");
+        player.sendMessage("§e/airdrop spawn §7- Заспавнить");
+        player.sendMessage("§e/airdrop here §7- Спавн здесь");
+        player.sendMessage("§e/airdrop tp §7- Телепорт");
+        player.sendMessage("§e/airdrop remove §7- Удалить");
+        player.sendMessage("§e/airdrop info §7- Инфо");
+        player.sendMessage("§e/airdrop setcenter §7- Центр");
+        player.sendMessage("§e/airdrop settime <мин> §7- Интервал");
+        player.sendMessage("§e/airdrop guards <тип> <кол> §7- Охранники");
+        player.sendMessage("§e/airdrop chance <тип> <%> §7- Шанс");
+        player.sendMessage("§e/airdrop setnpc <тип> <пресет> §7- NPC");
+        player.sendMessage("§e/airdrop loot §7- §a§lРедактор лута");
+        player.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        List<String> list = new ArrayList<>();
+        String cmd = command.getName().toLowerCase();
+
+        if (cmd.equals("airdrop") && args.length == 1) {
+            for (String s : Arrays.asList("spawn", "here", "tp", "remove", "info", "setcenter", "settime", "guards", "chance", "setnpc", "loot")) {
+                if (s.startsWith(args[0].toLowerCase())) list.add(s);
+            }
+        } else if (cmd.equals("airdrop") && args.length == 2) {
+            if (args[0].equalsIgnoreCase("guards") || args[0].equalsIgnoreCase("chance") ||
+                    args[0].equalsIgnoreCase("setnpc") || args[0].equalsIgnoreCase("loot")) {
+                for (String s : Arrays.asList("common", "rare", "legendary")) {
+                    if (s.startsWith(args[1].toLowerCase())) list.add(s);
+                }
+            }
+        }
+        return list;
+    }
+}
+
+
+NPCCommand:
+
+package org.exampl.npcplugin_shahed.commands;
+
+import org.exampl.npcplugin_shahed.CustomNPC;
+import org.exampl.npcplugin_shahed.gui.PresetGUI;
+import org.exampl.npcplugin_shahed.manager.NPCManager;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+public class NPCCommand implements CommandExecutor {
+
+    private final CustomNPC plugin;
+    private final NPCManager npcManager;
+    private final PresetGUI presetGUI;
+
+    public NPCCommand(CustomNPC plugin, NPCManager npcManager, PresetGUI presetGUI) {
+        this.plugin = plugin;
+        this.npcManager = npcManager;
+        this.presetGUI = presetGUI;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("§cЭту команду может использовать только игрок!");
+            return true;
+        }
+
+        Player player = (Player) sender;
+
+        if (args.length == 0) {
+            sendHelp(player);
+            return true;
+        }
+
+        String subCommand = args[0].toLowerCase();
+
+        if (subCommand.equals("spawn")) {
+            handleSpawn(player, args);
+        } else if (subCommand.equals("remove")) {
+            handleRemove(player);
+        } else if (subCommand.equals("setname")) {
+            handleSetName(player, args);
+        } else if (subCommand.equals("setarmor")) {
+            handleSetArmor(player, args);
+        } else if (subCommand.equals("setspeed")) {
+            handleSetSpeed(player, args);
+        } else if (subCommand.equals("sethp")) {
+            handleSetHP(player, args);
+        } else if (subCommand.equals("setweapon")) {
+            handleSetWeapon(player);
+        } else if (subCommand.equals("setoffhand")) {
+            handleSetOffHand(player);
+        } else if (subCommand.equals("setaggro")) {
+            handleSetAggro(player, args);
+        } else if (subCommand.equals("saves") || subCommand.equals("presets") || subCommand.equals("menu")) {
+            presetGUI.openMainMenu(player);
+        } else {
+            sendHelp(player);
+        }
+
+        return true;
+    }
+
+    private void handleSpawn(Player player, String[] args) {
+        String mobType = "zombie";
+
+        if (args.length >= 2) {
+            mobType = args[1].toLowerCase();
+            if (!mobType.equals("zombie") && !mobType.equals("skeleton") &&
+                    !mobType.equals("wither_skeleton") && !mobType.equals("wither")) {
+                player.sendMessage("§cДоступные мобы: zombie, skeleton, wither_skeleton");
+                return;
+            }
+        }
+
+        LivingEntity npc = npcManager.spawnNPC(player.getLocation(), mobType);
+
+        String mobName;
+        switch (mobType) {
+            case "skeleton":
+                mobName = "Скелет";
+                break;
+            case "wither_skeleton":
+            case "wither":
+                mobName = "Визер Скелет";
+                break;
+            default:
+                mobName = "Зомби";
+                break;
+        }
+
+        player.sendMessage("§aNPC заспавнен! Тип: §e" + mobName);
+        player.sendMessage("§7ID: §e" + npc.getUniqueId());
+    }
+
+    private void handleRemove(Player player) {
+        LivingEntity npc = npcManager.getNearestNPC(player);
+        if (npc == null) {
+            player.sendMessage("§cРядом нет NPC!");
+            return;
+        }
+
+        npcManager.removeNPC(npc.getUniqueId());
+        player.sendMessage("§aNPC удален!");
+    }
+
+    private void handleSetName(Player player, String[] args) {
+        if (args.length < 2) {
+            player.sendMessage("§cИспользование: /npc setname <имя>");
+            return;
+        }
+
+        LivingEntity npc = npcManager.getNearestNPC(player);
+        if (npc == null) {
+            player.sendMessage("§cРядом нет NPC!");
+            return;
+        }
+
+        StringBuilder name = new StringBuilder();
+        for (int i = 1; i < args.length; i++) {
+            name.append(args[i]).append(" ");
+        }
+
+        npcManager.setNPCName(npc.getUniqueId(), name.toString().trim());
+        player.sendMessage("§aИмя NPC изменено на: §e" + name.toString().trim());
+    }
+
+    private void handleSetArmor(Player player, String[] args) {
+        if (args.length < 2) {
+            player.sendMessage("§cИспользование: /npc setarmor <helmet|chestplate|leggings|boots>");
+            return;
+        }
+
+        LivingEntity npc = npcManager.getNearestNPC(player);
+        if (npc == null) {
+            player.sendMessage("§cРядом нет NPC!");
+            return;
+        }
+
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType() == Material.AIR) {
+            player.sendMessage("§cВозьмите предмет в руку!");
+            return;
+        }
+
+        String armorType = args[1].toLowerCase();
+
+        if (armorType.equals("helmet")) {
+            npcManager.setNPCArmor(npc.getUniqueId(), item, null, null, null);
+            player.sendMessage("§aШлем установлен!");
+        } else if (armorType.equals("chestplate")) {
+            npcManager.setNPCArmor(npc.getUniqueId(), null, item, null, null);
+            player.sendMessage("§aНагрудник установлен!");
+        } else if (armorType.equals("leggings")) {
+            npcManager.setNPCArmor(npc.getUniqueId(), null, null, item, null);
+            player.sendMessage("§aПоножи установлены!");
+        } else if (armorType.equals("boots")) {
+            npcManager.setNPCArmor(npc.getUniqueId(), null, null, null, item);
+            player.sendMessage("§aБотинки установлены!");
+        } else {
+            player.sendMessage("§cНеверный тип брони! Используй: helmet, chestplate, leggings, boots");
+        }
+    }
+
+    private void handleSetSpeed(Player player, String[] args) {
+        if (args.length < 2) {
+            player.sendMessage("§cИспользование: /npc setspeed <скорость>");
+            return;
+        }
+
+        LivingEntity npc = npcManager.getNearestNPC(player);
+        if (npc == null) {
+            player.sendMessage("§cРядом нет NPC!");
+            return;
+        }
+
+        try {
+            double speed = Double.parseDouble(args[1]);
+            npcManager.setNPCSpeed(npc.getUniqueId(), speed);
+            player.sendMessage("§aСкорость NPC установлена на: §e" + speed);
+        } catch (NumberFormatException e) {
+            player.sendMessage("§cНеверное число!");
+        }
+    }
+
+    private void handleSetHP(Player player, String[] args) {
+        if (args.length < 2) {
+            player.sendMessage("§cИспользование: /npc sethp <здоровье>");
+            return;
+        }
+
+        LivingEntity npc = npcManager.getNearestNPC(player);
+        if (npc == null) {
+            player.sendMessage("§cРядом нет NPC!");
+            return;
+        }
+
+        try {
+            double hp = Double.parseDouble(args[1]);
+            npcManager.setNPCHealth(npc.getUniqueId(), hp);
+            player.sendMessage("§aЗдоровье NPC установлено на: §e" + hp);
+        } catch (NumberFormatException e) {
+            player.sendMessage("§cНеверное число!");
+        }
+    }
+
+    private void handleSetWeapon(Player player) {
+        LivingEntity npc = npcManager.getNearestNPC(player);
+        if (npc == null) {
+            player.sendMessage("§cРядом нет NPC!");
+            return;
+        }
+
+        ItemStack weapon = player.getInventory().getItemInMainHand();
+        if (weapon.getType() == Material.AIR) {
+            player.sendMessage("§cВозьмите оружие в руку!");
+            return;
+        }
+
+        npcManager.setNPCWeapon(npc.getUniqueId(), weapon);
+        player.sendMessage("§aОружие NPC установлено (правая рука)!");
+    }
+
+    private void handleSetOffHand(Player player) {
+        LivingEntity npc = npcManager.getNearestNPC(player);
+        if (npc == null) {
+            player.sendMessage("§cРядом нет NPC!");
+            return;
+        }
+
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType() == Material.AIR) {
+            player.sendMessage("§cВозьмите предмет в руку!");
+            return;
+        }
+
+        npcManager.setNPCOffHand(npc.getUniqueId(), item);
+        player.sendMessage("§aПредмет установлен в левую руку NPC!");
+    }
+
+    private void handleSetAggro(Player player, String[] args) {
+        if (args.length < 2) {
+            player.sendMessage("§cИспользование: /npc setaggro <all|none|ник_игрока>");
+            return;
+        }
+
+        LivingEntity npc = npcManager.getNearestNPC(player);
+        if (npc == null) {
+            player.sendMessage("§cРядом нет NPC!");
+            return;
+        }
+
+        if (args[1].equalsIgnoreCase("all")) {
+            npcManager.setAggroMode(npc.getUniqueId(), "all");
+            player.sendMessage("§aNPC теперь агрится на всех игроков!");
+        } else if (args[1].equalsIgnoreCase("none")) {
+            npcManager.setAggroMode(npc.getUniqueId(), "none");
+            player.sendMessage("§aNPC теперь не агрится!");
+        } else {
+            Player targetPlayer = Bukkit.getPlayer(args[1]);
+            if (targetPlayer == null) {
+                player.sendMessage("§cИгрок не найден!");
+                return;
+            }
+            npcManager.setAggroPlayer(npc.getUniqueId(), targetPlayer.getUniqueId());
+            player.sendMessage("§aNPC теперь агрится только на: §e" + targetPlayer.getName());
+        }
+    }
+
+    private void sendHelp(Player player) {
+        player.sendMessage("§6§l========= CustomNPC =========");
+        player.sendMessage("§e/npc spawn [тип] §7- Заспавнить NPC");
+        player.sendMessage("§7  Типы: §fzombie§7, §fskeleton§7, §fwither_skeleton");
+        player.sendMessage("§e/npc remove §7- Удалить ближайшего NPC");
+        player.sendMessage("§e/npc setname <имя> §7- Установить имя");
+        player.sendMessage("§e/npc setarmor <тип> §7- Установить броню");
+        player.sendMessage("§e/npc setspeed <число> §7- Установить скорость");
+        player.sendMessage("§e/npc sethp <число> §7- Установить здоровье");
+        player.sendMessage("§e/npc setweapon §7- Оружие (правая рука)");
+        player.sendMessage("§e/npc setoffhand §7- Предмет (левая рука)");
+        player.sendMessage("§e/npc setaggro <all|none|ник> §7- Агрессия");
+        player.sendMessage("§e/npc saves §7- §6§lМеню пресетов");
+        player.sendMessage("§6§l==============================");
+    }
+}
+
+
+AirdropLoot:
+
+package org.exampl.npcplugin_shahed.data;
+
+import org.bukkit.inventory.ItemStack;
+import java.util.ArrayList;
+import java.util.List;
+
+public class AirdropLoot {
+
+    private String type;
+    private int chance;
+    private List<ItemStack> items;
+
+    public AirdropLoot(String type, int chance) {
+        this.type = type;
+        this.chance = chance;
+        this.items = new ArrayList<>();
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public int getChance() {
+        return chance;
+    }
+
+    public void setChance(int chance) {
+        this.chance = Math.max(0, Math.min(100, chance));
+    }
+
+    public List<ItemStack> getItems() {
+        return items;
+    }
+
+    public void setItems(List<ItemStack> items) {
+        this.items = items;
+    }
+
+    public void addItem(ItemStack item) {
+        if (items.size() < 27) {
+            items.add(item.clone());
+        }
+    }
+
+    public void removeItem(int index) {
+        if (index >= 0 && index < items.size()) {
+            items.remove(index);
+        }
+    }
+
+    public void clearItems() {
+        items.clear();
+    }
+
+    public String getDisplayName() {
+        switch (type.toLowerCase()) {
+            case "common":
+                return "§7Обычный";
+            case "rare":
+                return "§9Редкий";
+            case "legendary":
+                return "§6Легендарный";
+            default:
+                return type;
+        }
+    }
+
+    public String getColor() {
+        switch (type.toLowerCase()) {
+            case "common":
+                return "§7";
+            case "rare":
+                return "§9";
+            case "legendary":
+                return "§6";
+            default:
+                return "§f";
+        }
+    }
+}
+
+
+NPCAbilities:
+
+package org.exampl.npcplugin_shahed.data;
+
+import java.io.Serializable;
+
+public class NPCAbilities implements Serializable {
+
+    // TNT способность
+    private boolean tntEnabled = false;
+    private int tntMinCount = 2;
+    private int tntMaxCount = 4;
+    private int tntInterval = 15; // секунды
+
+    // Молния способность
+    private boolean lightningEnabled = false;
+    private int lightningInterval = 50; // секунды
+
+    // Подброс способность
+    private boolean launchEnabled = false;
+    private int launchHeight = 30; // блоки
+    private int launchInterval = 60; // секунды
+
+    // Радиус активации способностей
+    private int activationRadius = 32;
+
+    // Конструктор
+    public NPCAbilities() {}
+
+    // Копирование
+    public NPCAbilities copy() {
+        NPCAbilities copy = new NPCAbilities();
+        copy.tntEnabled = this.tntEnabled;
+        copy.tntMinCount = this.tntMinCount;
+        copy.tntMaxCount = this.tntMaxCount;
+        copy.tntInterval = this.tntInterval;
+        copy.lightningEnabled = this.lightningEnabled;
+        copy.lightningInterval = this.lightningInterval;
+        copy.launchEnabled = this.launchEnabled;
+        copy.launchHeight = this.launchHeight;
+        copy.launchInterval = this.launchInterval;
+        copy.activationRadius = this.activationRadius;
+        return copy;
+    }
+
+    // ===== TNT =====
+    public boolean isTntEnabled() { return tntEnabled; }
+    public void setTntEnabled(boolean enabled) { this.tntEnabled = enabled; }
+    public int getTntMinCount() { return tntMinCount; }
+    public void setTntMinCount(int count) { this.tntMinCount = Math.max(1, Math.min(10, count)); }
+    public int getTntMaxCount() { return tntMaxCount; }
+    public void setTntMaxCount(int count) { this.tntMaxCount = Math.max(1, Math.min(10, count)); }
+    public int getTntInterval() { return tntInterval; }
+    public void setTntInterval(int seconds) { this.tntInterval = Math.max(5, seconds); }
+
+    // ===== Молния =====
+    public boolean isLightningEnabled() { return lightningEnabled; }
+    public void setLightningEnabled(boolean enabled) { this.lightningEnabled = enabled; }
+    public int getLightningInterval() { return lightningInterval; }
+    public void setLightningInterval(int seconds) { this.lightningInterval = Math.max(5, seconds); }
+
+    // ===== Подброс =====
+    public boolean isLaunchEnabled() { return launchEnabled; }
+    public void setLaunchEnabled(boolean enabled) { this.launchEnabled = enabled; }
+    public int getLaunchHeight() { return launchHeight; }
+    public void setLaunchHeight(int height) { this.launchHeight = Math.max(5, Math.min(100, height)); }
+    public int getLaunchInterval() { return launchInterval; }
+    public void setLaunchInterval(int seconds) { this.launchInterval = Math.max(5, seconds); }
+
+    // ===== Радиус =====
+    public int getActivationRadius() { return activationRadius; }
+    public void setActivationRadius(int radius) { this.activationRadius = Math.max(10, Math.min(64, radius)); }
+
+    // Проверка - есть ли хоть одна способность
+    public boolean hasAnyAbility() {
+        return tntEnabled || lightningEnabled || launchEnabled;
+    }
+}
+
+
+NPCPreset:
+
+package org.exampl.npcplugin_shahed.data;
+
+import org.bukkit.inventory.ItemStack;
+import java.io.Serializable;
+
+public class NPCPreset implements Serializable {
+
+    private String name;
+    private String displayName;
+    private String mobType;
+    private double health;
+    private double speed;
+    private ItemStack weapon;
+    private ItemStack offHand;
+    private ItemStack helmet;
+    private ItemStack chestplate;
+    private ItemStack leggings;
+    private ItemStack boots;
+    private String aggroMode;
+
+    // НОВОЕ: Способности
+    private NPCAbilities abilities;
+
+    public NPCPreset(String name) {
+        this.name = name;
+        this.displayName = "NPC";
+        this.mobType = "zombie";
+        this.health = 20.0;
+        this.speed = 0.23;
+        this.aggroMode = "all";
+        this.abilities = new NPCAbilities();
+    }
+
+    // Getters
+    public String getName() { return name; }
+    public String getDisplayName() { return displayName; }
+    public String getMobType() { return mobType; }
+    public double getHealth() { return health; }
+    public double getSpeed() { return speed; }
+    public ItemStack getWeapon() { return weapon; }
+    public ItemStack getOffHand() { return offHand; }
+    public ItemStack getHelmet() { return helmet; }
+    public ItemStack getChestplate() { return chestplate; }
+    public ItemStack getLeggings() { return leggings; }
+    public ItemStack getBoots() { return boots; }
+    public String getAggroMode() { return aggroMode; }
+    public NPCAbilities getAbilities() {
+        if (abilities == null) abilities = new NPCAbilities();
+        return abilities;
+    }
+
+    // Setters
+    public void setName(String name) { this.name = name; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public void setMobType(String mobType) { this.mobType = mobType; }
+    public void setHealth(double health) { this.health = health; }
+    public void setSpeed(double speed) { this.speed = speed; }
+    public void setWeapon(ItemStack weapon) { this.weapon = weapon; }
+    public void setOffHand(ItemStack offHand) { this.offHand = offHand; }
+    public void setHelmet(ItemStack helmet) { this.helmet = helmet; }
+    public void setChestplate(ItemStack chestplate) { this.chestplate = chestplate; }
+    public void setLeggings(ItemStack leggings) { this.leggings = leggings; }
+    public void setBoots(ItemStack boots) { this.boots = boots; }
+    public void setAggroMode(String aggroMode) { this.aggroMode = aggroMode; }
+    public void setAbilities(NPCAbilities abilities) { this.abilities = abilities; }
+}
+
+
+AbilityGUI:
+
+package org.exampl.npcplugin_shahed.gui;
+
+import org.exampl.npcplugin_shahed.CustomNPC;
+import org.exampl.npcplugin_shahed.data.NPCAbilities;
+import org.exampl.npcplugin_shahed.data.NPCPreset;
+import org.exampl.npcplugin_shahed.manager.PresetManager;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.*;
+
+public class AbilityGUI implements Listener {
+
+    private final CustomNPC plugin;
+    private final PresetManager presetManager;
+
+    private final String ABILITY_MENU = "§c§lСпособности NPC";
+    private final String TNT_MENU = "§c§lНастройка TNT";
+    private final String LIGHTNING_MENU = "§e§lНастройка Молнии";
+    private final String LAUNCH_MENU = "§b§lНастройка Подброса";
+
+    private final Map<UUID, String> editingPreset = new HashMap<>();
+
+    public AbilityGUI(CustomNPC plugin, PresetManager presetManager) {
+        this.plugin = plugin;
+        this.presetManager = presetManager;
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void openAbilityMenu(Player player, String presetName) {
+        editingPreset.put(player.getUniqueId(), presetName);
+
+        NPCPreset preset = findPreset(player, presetName);
+        if (preset == null) {
+            player.sendMessage("§cПресет не найден!");
+            return;
+        }
+
+        NPCAbilities abilities = preset.getAbilities();
+        Inventory inv = Bukkit.createInventory(null, 45, ABILITY_MENU);
+
+        // TNT способность
+        ItemStack tntItem = createItem(Material.TNT,
+                "§c§lTNT Взрыв " + (abilities.isTntEnabled() ? "§a[ВКЛ]" : "§c[ВЫКЛ]"),
+                Arrays.asList(
+                        "",
+                        "§7Из NPC вылетают TNT",
+                        "",
+                        "§7Количество: §f" + abilities.getTntMinCount() + "-" + abilities.getTntMaxCount(),
+                        "§7Интервал: §f" + abilities.getTntInterval() + " сек",
+                        "",
+                        "§eЛКМ - Вкл/Выкл",
+                        "§eПКМ - Настроить"
+                ));
+        inv.setItem(11, tntItem);
+
+        // Молния способность
+        ItemStack lightningItem = createItem(Material.TRIDENT,
+                "§e§lМолния " + (abilities.isLightningEnabled() ? "§a[ВКЛ]" : "§c[ВЫКЛ]"),
+                Arrays.asList(
+                        "",
+                        "§7Призывает молнию на игрока",
+                        "",
+                        "§7Интервал: §f" + abilities.getLightningInterval() + " сек",
+                        "",
+                        "§eЛКМ - Вкл/Выкл",
+                        "§eПКМ - Настроить"
+                ));
+        inv.setItem(13, lightningItem);
+
+        // Подброс способность
+        ItemStack launchItem = createItem(Material.FEATHER,
+                "§b§lПодброс " + (abilities.isLaunchEnabled() ? "§a[ВКЛ]" : "§c[ВЫКЛ]"),
+                Arrays.asList(
+                        "",
+                        "§7Подбрасывает игрока вверх",
+                        "",
+                        "§7Высота: §f" + abilities.getLaunchHeight() + " блоков",
+                        "§7Интервал: §f" + abilities.getLaunchInterval() + " сек",
+                        "",
+                        "§eЛКМ - Вкл/Выкл",
+                        "§eПКМ - Настроить"
+                ));
+        inv.setItem(15, launchItem);
+
+        // Радиус активации
+        ItemStack radiusItem = createItem(Material.ENDER_EYE,
+                "§d§lРадиус активации",
+                Arrays.asList(
+                        "",
+                        "§7Способности работают когда",
+                        "§7игрок в радиусе от NPC",
+                        "",
+                        "§7Текущий: §f" + abilities.getActivationRadius() + " блоков",
+                        "",
+                        "§eЛКМ - §a+5 блоков",
+                        "§eПКМ - §c-5 блоков",
+                        "§eShift+ЛКМ - §a+10",
+                        "§eShift+ПКМ - §c-10"
+                ));
+        inv.setItem(31, radiusItem);
+
+        // Информация о пресете
+        ItemStack infoItem = createItem(Material.NAME_TAG,
+                "§6§lПресет: §f" + presetName,
+                Arrays.asList(
+                        "",
+                        "§7Настройка способностей",
+                        "§7для этого пресета"
+                ));
+        inv.setItem(4, infoItem);
+
+        // Кнопка назад
+        ItemStack backItem = createItem(Material.ARROW, "§c§lНазад",
+                Collections.singletonList("§7Вернуться к пресетам"));
+        inv.setItem(36, backItem);
+
+        // Заполнитель
+        ItemStack filler = createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        for (int i = 0; i < 45; i++) {
+            if (inv.getItem(i) == null) inv.setItem(i, filler);
+        }
+
+        player.openInventory(inv);
+    }
+
+    public void openTntSettings(Player player) {
+        String presetName = editingPreset.get(player.getUniqueId());
+        NPCPreset preset = findPreset(player, presetName);
+        if (preset == null) return;
+
+        NPCAbilities abilities = preset.getAbilities();
+        Inventory inv = Bukkit.createInventory(null, 36, TNT_MENU);
+
+        // Минимальное количество
+        ItemStack minItem = createItem(Material.TNT,
+                "§c§lМин. количество: §f" + abilities.getTntMinCount(),
+                Arrays.asList(
+                        "",
+                        "§eЛКМ - §a+1",
+                        "§eПКМ - §c-1"
+                ));
+        inv.setItem(11, minItem);
+
+        // Максимальное количество
+        ItemStack maxItem = createItem(Material.TNT_MINECART,
+                "§c§lМакс. количество: §f" + abilities.getTntMaxCount(),
+                Arrays.asList(
+                        "",
+                        "§eЛКМ - §a+1",
+                        "§eПКМ - §c-1"
+                ));
+        inv.setItem(13, maxItem);
+
+        // Интервал
+        ItemStack intervalItem = createItem(Material.CLOCK,
+                "§e§lИнтервал: §f" + abilities.getTntInterval() + " сек",
+                Arrays.asList(
+                        "",
+                        "§eЛКМ - §a+5 сек",
+                        "§eПКМ - §c-5 сек",
+                        "§eShift+ЛКМ - §a+15 сек",
+                        "§eShift+ПКМ - §c-15 сек"
+                ));
+        inv.setItem(15, intervalItem);
+
+        // Назад
+        ItemStack backItem = createItem(Material.ARROW, "§c§lНазад", null);
+        inv.setItem(31, backItem);
+
+        // Заполнитель
+        ItemStack filler = createItem(Material.RED_STAINED_GLASS_PANE, " ", null);
+        for (int i = 0; i < 36; i++) {
+            if (inv.getItem(i) == null) inv.setItem(i, filler);
+        }
+
+        player.openInventory(inv);
+    }
+
+    public void openLightningSettings(Player player) {
+        String presetName = editingPreset.get(player.getUniqueId());
+        NPCPreset preset = findPreset(player, presetName);
+        if (preset == null) return;
+
+        NPCAbilities abilities = preset.getAbilities();
+        Inventory inv = Bukkit.createInventory(null, 36, LIGHTNING_MENU);
+
+        // Интервал
+        ItemStack intervalItem = createItem(Material.CLOCK,
+                "§e§lИнтервал: §f" + abilities.getLightningInterval() + " сек",
+                Arrays.asList(
+                        "",
+                        "§7Как часто бьет молния",
+                        "",
+                        "§eЛКМ - §a+5 сек",
+                        "§eПКМ - §c-5 сек",
+                        "§eShift+ЛКМ - §a+15 сек",
+                        "§eShift+ПКМ - §c-15 сек"
+                ));
+        inv.setItem(13, intervalItem);
+
+        // Назад
+        ItemStack backItem = createItem(Material.ARROW, "§c§lНазад", null);
+        inv.setItem(31, backItem);
+
+        // Заполнитель
+        ItemStack filler = createItem(Material.YELLOW_STAINED_GLASS_PANE, " ", null);
+        for (int i = 0; i < 36; i++) {
+            if (inv.getItem(i) == null) inv.setItem(i, filler);
+        }
+
+        player.openInventory(inv);
+    }
+
+    public void openLaunchSettings(Player player) {
+        String presetName = editingPreset.get(player.getUniqueId());
+        NPCPreset preset = findPreset(player, presetName);
+        if (preset == null) return;
+
+        NPCAbilities abilities = preset.getAbilities();
+        Inventory inv = Bukkit.createInventory(null, 36, LAUNCH_MENU);
+
+        // Высота
+        ItemStack heightItem = createItem(Material.FEATHER,
+                "§b§lВысота: §f" + abilities.getLaunchHeight() + " блоков",
+                Arrays.asList(
+                        "",
+                        "§7На сколько подбросить",
+                        "",
+                        "§eЛКМ - §a+5 блоков",
+                        "§eПКМ - §c-5 блоков",
+                        "§eShift+ЛКМ - §a+10",
+                        "§eShift+ПКМ - §c-10"
+                ));
+        inv.setItem(11, heightItem);
+
+        // Интервал
+        ItemStack intervalItem = createItem(Material.CLOCK,
+                "§e§lИнтервал: §f" + abilities.getLaunchInterval() + " сек",
+                Arrays.asList(
+                        "",
+                        "§7Как часто подбрасывать",
+                        "",
+                        "§eЛКМ - §a+5 сек",
+                        "§eПКМ - §c-5 сек",
+                        "§eShift+ЛКМ - §a+15 сек",
+                        "§eShift+ПКМ - §c-15 сек"
+                ));
+        inv.setItem(15, intervalItem);
+
+        // Назад
+        ItemStack backItem = createItem(Material.ARROW, "§c§lНазад", null);
+        inv.setItem(31, backItem);
+
+        // Заполнитель
+        ItemStack filler = createItem(Material.LIGHT_BLUE_STAINED_GLASS_PANE, " ", null);
+        for (int i = 0; i < 36; i++) {
+            if (inv.getItem(i) == null) inv.setItem(i, filler);
+        }
+
+        player.openInventory(inv);
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        Player player = (Player) event.getWhoClicked();
+        String title = event.getView().getTitle();
+
+        if (title.equals(ABILITY_MENU)) {
+            event.setCancelled(true);
+            handleAbilityMenuClick(player, event.getSlot(), event.getClick());
+        } else if (title.equals(TNT_MENU)) {
+            event.setCancelled(true);
+            handleTntMenuClick(player, event.getSlot(), event.getClick());
+        } else if (title.equals(LIGHTNING_MENU)) {
+            event.setCancelled(true);
+            handleLightningMenuClick(player, event.getSlot(), event.getClick());
+        } else if (title.equals(LAUNCH_MENU)) {
+            event.setCancelled(true);
+            handleLaunchMenuClick(player, event.getSlot(), event.getClick());
+        }
+    }
+
+    private void handleAbilityMenuClick(Player player, int slot, ClickType click) {
+        String presetName = editingPreset.get(player.getUniqueId());
+        NPCPreset preset = findPreset(player, presetName);
+        if (preset == null) return;
+
+        NPCAbilities abilities = preset.getAbilities();
+
+        switch (slot) {
+            case 11: // TNT
+                if (click.isLeftClick()) {
+                    abilities.setTntEnabled(!abilities.isTntEnabled());
+                    saveAndRefresh(player, presetName);
+                } else if (click.isRightClick()) {
+                    player.closeInventory();
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> openTntSettings(player), 1L);
+                }
+                break;
+
+            case 13: // Lightning
+                if (click.isLeftClick()) {
+                    abilities.setLightningEnabled(!abilities.isLightningEnabled());
+                    saveAndRefresh(player, presetName);
+                } else if (click.isRightClick()) {
+                    player.closeInventory();
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> openLightningSettings(player), 1L);
+                }
+                break;
+
+            case 15: // Launch
+                if (click.isLeftClick()) {
+                    abilities.setLaunchEnabled(!abilities.isLaunchEnabled());
+                    saveAndRefresh(player, presetName);
+                } else if (click.isRightClick()) {
+                    player.closeInventory();
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> openLaunchSettings(player), 1L);
+                }
+                break;
+
+            case 31: // Radius
+                int change = click.isShiftClick() ? 10 : 5;
+                if (click.isLeftClick()) {
+                    abilities.setActivationRadius(abilities.getActivationRadius() + change);
+                } else if (click.isRightClick()) {
+                    abilities.setActivationRadius(abilities.getActivationRadius() - change);
+                }
+                saveAndRefresh(player, presetName);
+                break;
+
+            case 36: // Back
+                player.closeInventory();
+                break;
+        }
+    }
+
+    private void handleTntMenuClick(Player player, int slot, ClickType click) {
+        String presetName = editingPreset.get(player.getUniqueId());
+        NPCPreset preset = findPreset(player, presetName);
+        if (preset == null) return;
+
+        NPCAbilities abilities = preset.getAbilities();
+
+        switch (slot) {
+            case 11: // Min count
+                if (click.isLeftClick()) {
+                    abilities.setTntMinCount(abilities.getTntMinCount() + 1);
+                } else if (click.isRightClick()) {
+                    abilities.setTntMinCount(abilities.getTntMinCount() - 1);
+                }
+                savePreset(player, preset);
+                openTntSettings(player);
+                break;
+
+            case 13: // Max count
+                if (click.isLeftClick()) {
+                    abilities.setTntMaxCount(abilities.getTntMaxCount() + 1);
+                } else if (click.isRightClick()) {
+                    abilities.setTntMaxCount(abilities.getTntMaxCount() - 1);
+                }
+                savePreset(player, preset);
+                openTntSettings(player);
+                break;
+
+            case 15: // Interval
+                int change = click.isShiftClick() ? 15 : 5;
+                if (click.isLeftClick()) {
+                    abilities.setTntInterval(abilities.getTntInterval() + change);
+                } else if (click.isRightClick()) {
+                    abilities.setTntInterval(abilities.getTntInterval() - change);
+                }
+                savePreset(player, preset);
+                openTntSettings(player);
+                break;
+
+            case 31: // Back
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openAbilityMenu(player, presetName), 1L);
+                break;
+        }
+    }
+
+    private void handleLightningMenuClick(Player player, int slot, ClickType click) {
+        String presetName = editingPreset.get(player.getUniqueId());
+        NPCPreset preset = findPreset(player, presetName);
+        if (preset == null) return;
+
+        NPCAbilities abilities = preset.getAbilities();
+
+        switch (slot) {
+            case 13: // Interval
+                int change = click.isShiftClick() ? 15 : 5;
+                if (click.isLeftClick()) {
+                    abilities.setLightningInterval(abilities.getLightningInterval() + change);
+                } else if (click.isRightClick()) {
+                    abilities.setLightningInterval(abilities.getLightningInterval() - change);
+                }
+                savePreset(player, preset);
+                openLightningSettings(player);
+                break;
+
+            case 31: // Back
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openAbilityMenu(player, presetName), 1L);
+                break;
+        }
+    }
+
+    private void handleLaunchMenuClick(Player player, int slot, ClickType click) {
+        String presetName = editingPreset.get(player.getUniqueId());
+        NPCPreset preset = findPreset(player, presetName);
+        if (preset == null) return;
+
+        NPCAbilities abilities = preset.getAbilities();
+
+        switch (slot) {
+            case 11: // Height
+                int heightChange = click.isShiftClick() ? 10 : 5;
+                if (click.isLeftClick()) {
+                    abilities.setLaunchHeight(abilities.getLaunchHeight() + heightChange);
+                } else if (click.isRightClick()) {
+                    abilities.setLaunchHeight(abilities.getLaunchHeight() - heightChange);
+                }
+                savePreset(player, preset);
+                openLaunchSettings(player);
+                break;
+
+            case 15: // Interval
+                int intervalChange = click.isShiftClick() ? 15 : 5;
+                if (click.isLeftClick()) {
+                    abilities.setLaunchInterval(abilities.getLaunchInterval() + intervalChange);
+                } else if (click.isRightClick()) {
+                    abilities.setLaunchInterval(abilities.getLaunchInterval() - intervalChange);
+                }
+                savePreset(player, preset);
+                openLaunchSettings(player);
+                break;
+
+            case 31: // Back
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openAbilityMenu(player, presetName), 1L);
+                break;
+        }
+    }
+
+    private NPCPreset findPreset(Player player, String presetName) {
+        if (presetName == null) return null;
+
+        // Сначала ищем у игрока
+        NPCPreset preset = presetManager.getPresetByName(player.getUniqueId(), presetName);
+        if (preset != null) return preset;
+
+        // Ищем у всех
+        for (UUID playerId : presetManager.getAllPlayerIds()) {
+            preset = presetManager.getPresetByName(playerId, presetName);
+            if (preset != null) return preset;
+        }
+        return null;
+    }
+
+    private void saveAndRefresh(Player player, String presetName) {
+        NPCPreset preset = findPreset(player, presetName);
+        if (preset != null) {
+            savePreset(player, preset);
+            openAbilityMenu(player, presetName);
+        }
+    }
+
+    private void savePreset(Player player, NPCPreset preset) {
+        presetManager.savePreset(player.getUniqueId(), preset);
+    }
+
+    private ItemStack createItem(Material material, String name, List<String> lore) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(name);
+            if (lore != null) meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+}
+
+
+AirdropGUI:
+
+package org.exampl.npcplugin_shahed.gui;
+
+import org.exampl.npcplugin_shahed.CustomNPC;
+import org.exampl.npcplugin_shahed.data.AirdropLoot;
+import org.exampl.npcplugin_shahed.manager.AirdropManager;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.*;
+
+public class AirdropGUI implements Listener {
+
+    private final CustomNPC plugin;
+    private final AirdropManager airdropManager;
+
+    private final String MAIN_MENU = "§6§lНастройка Аирдропа";
+    private final String COMMON_MENU = "§7§lОбычный лут";
+    private final String RARE_MENU = "§9§lРедкий лут";
+    private final String LEGENDARY_MENU = "§6§lЛегендарный лут";
+
+    private final Map<UUID, String> editingType = new HashMap<>();
+
+    public AirdropGUI(CustomNPC plugin, AirdropManager airdropManager) {
+        this.plugin = plugin;
+        this.airdropManager = airdropManager;
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void openMainMenu(Player player) {
+        Inventory inv = Bukkit.createInventory(null, 27, MAIN_MENU);
+
+        AirdropLoot common = airdropManager.getLoot("common");
+        AirdropLoot rare = airdropManager.getLoot("rare");
+        AirdropLoot legendary = airdropManager.getLoot("legendary");
+
+        // Обычный
+        ItemStack commonItem = createItem(Material.IRON_INGOT, "§7§lОбычный лут",
+                Arrays.asList(
+                        "§7Шанс: §f" + common.getChance() + "%",
+                        "§7Предметов: §f" + common.getItems().size(),
+                        "",
+                        "§eНажми чтобы настроить"
+                ));
+        inv.setItem(11, commonItem);
+
+        // Редкий
+        ItemStack rareItem = createItem(Material.GOLD_INGOT, "§9§lРедкий лут",
+                Arrays.asList(
+                        "§7Шанс: §f" + rare.getChance() + "%",
+                        "§7Предметов: §f" + rare.getItems().size(),
+                        "",
+                        "§eНажми чтобы настроить"
+                ));
+        inv.setItem(13, rareItem);
+
+        // Легендарный
+        ItemStack legendaryItem = createItem(Material.DIAMOND, "§6§lЛегендарный лут",
+                Arrays.asList(
+                        "§7Шанс: §f" + legendary.getChance() + "%",
+                        "§7Предметов: §f" + legendary.getItems().size(),
+                        "",
+                        "§eНажми чтобы настроить"
+                ));
+        inv.setItem(15, legendaryItem);
+
+        // Инфо
+        int total = common.getChance() + rare.getChance() + legendary.getChance();
+        ItemStack infoItem = createItem(Material.BOOK, "§e§lИнформация",
+                Arrays.asList(
+                        "§7Сумма шансов: §f" + total + "%",
+                        "",
+                        "§7Шанс выбирается случайно",
+                        "§7из 100%. Если сумма > 100%,",
+                        "§7то шансы пропорциональны."
+                ));
+        inv.setItem(22, infoItem);
+
+        // Заполнитель
+        ItemStack filler = createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        for (int i = 0; i < 27; i++) {
+            if (inv.getItem(i) == null) {
+                inv.setItem(i, filler);
+            }
+        }
+
+        player.openInventory(inv);
+    }
+
+    public void openLootMenu(Player player, String type) {
+        String title;
+        switch (type) {
+            case "common":
+                title = COMMON_MENU;
+                break;
+            case "rare":
+                title = RARE_MENU;
+                break;
+            case "legendary":
+                title = LEGENDARY_MENU;
+                break;
+            default:
+                return;
+        }
+
+        Inventory inv = Bukkit.createInventory(null, 54, title);
+        AirdropLoot loot = airdropManager.getLoot(type);
+
+        // Заполняем предметы (слоты 0-26)
+        List<ItemStack> items = loot.getItems();
+        for (int i = 0; i < items.size() && i < 27; i++) {
+            inv.setItem(i, items.get(i));
+        }
+
+        // Нижняя панель
+        ItemStack filler = createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        for (int i = 27; i < 54; i++) {
+            inv.setItem(i, filler);
+        }
+
+        // Кнопка сохранить
+        ItemStack saveBtn = createItem(Material.EMERALD_BLOCK, "§a§lСохранить",
+                Collections.singletonList("§7Сохранить изменения"));
+        inv.setItem(49, saveBtn);
+
+        // Кнопка назад
+        ItemStack backBtn = createItem(Material.ARROW, "§c§lНазад",
+                Collections.singletonList("§7В главное меню"));
+        inv.setItem(45, backBtn);
+
+        // Кнопка очистить
+        ItemStack clearBtn = createItem(Material.BARRIER, "§c§lОчистить всё",
+                Collections.singletonList("§7Удалить все предметы"));
+        inv.setItem(53, clearBtn);
+
+        // Инфо
+        ItemStack infoBtn = createItem(Material.BOOK, "§e§lКак добавить предметы",
+                Arrays.asList(
+                        "§7Просто перетащи предметы",
+                        "§7из своего инвентаря в верхнюю",
+                        "§7часть меню (27 слотов)",
+                        "",
+                        "§7Потом нажми §aСохранить"
+                ));
+        inv.setItem(47, infoBtn);
+
+        // Шанс
+        ItemStack chanceBtn = createItem(Material.CLOCK, "§b§lШанс: " + loot.getChance() + "%",
+                Arrays.asList(
+                        "§7Текущий шанс выпадения",
+                        "",
+                        "§7Изменить командой:",
+                        "§e/airdropchance " + type + " <число>"
+                ));
+        inv.setItem(51, chanceBtn);
+
+        editingType.put(player.getUniqueId(), type);
+        player.openInventory(inv);
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        Player player = (Player) event.getWhoClicked();
+        String title = event.getView().getTitle();
+
+        if (title.equals(MAIN_MENU)) {
+            event.setCancelled(true);
+            handleMainMenuClick(player, event.getSlot());
+        } else if (title.equals(COMMON_MENU) || title.equals(RARE_MENU) || title.equals(LEGENDARY_MENU)) {
+            handleLootMenuClick(player, event);
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player)) return;
+        Player player = (Player) event.getPlayer();
+        editingType.remove(player.getUniqueId());
+    }
+
+    private void handleMainMenuClick(Player player, int slot) {
+        switch (slot) {
+            case 11:
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openLootMenu(player, "common"), 1L);
+                break;
+            case 13:
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openLootMenu(player, "rare"), 1L);
+                break;
+            case 15:
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openLootMenu(player, "legendary"), 1L);
+                break;
+        }
+    }
+
+    private void handleLootMenuClick(Player player, InventoryClickEvent event) {
+        int slot = event.getRawSlot();
+
+        // Разрешаем перетаскивание в верхние 27 слотов
+        if (slot >= 0 && slot < 27) {
+            return; // Не отменяем - можно класть предметы
+        }
+
+        // Нижняя панель
+        if (slot >= 27 && slot < 54) {
+            event.setCancelled(true);
+
+            String type = editingType.get(player.getUniqueId());
+            if (type == null) return;
+
+            switch (slot) {
+                case 45: // Назад
+                    player.closeInventory();
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> openMainMenu(player), 1L);
+                    break;
+
+                case 49: // Сохранить
+                    saveLootFromInventory(player, type, event.getInventory());
+                    player.sendMessage("§aЛут сохранен!");
+                    player.closeInventory();
+                    break;
+
+                case 53: // Очистить
+                    for (int i = 0; i < 27; i++) {
+                        event.getInventory().setItem(i, null);
+                    }
+                    player.sendMessage("§cЛут очищен! Нажми §aСохранить§c!");
+                    break;
+            }
+        }
+
+        // Инвентарь игрока - разрешаем
+        if (slot >= 54) {
+            return;
+        }
+    }
+
+    private void saveLootFromInventory(Player player, String type, Inventory inv) {
+        AirdropLoot loot = airdropManager.getLoot(type);
+        loot.clearItems();
+
+        for (int i = 0; i < 27; i++) {
+            ItemStack item = inv.getItem(i);
+            if (item != null && item.getType() != Material.AIR) {
+                loot.addItem(item);
+            }
+        }
+
+        airdropManager.saveLootConfig();
+    }
+
+    private ItemStack createItem(Material material, String name, List<String> lore) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(name);
+            if (lore != null) {
+                meta.setLore(lore);
+            }
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+}
+
+
+AirdropNpcGUI:
+
+package org.exampl.npcplugin_shahed.gui;
+
+import org.exampl.npcplugin_shahed.CustomNPC;
+import org.exampl.npcplugin_shahed.data.NPCPreset;
+import org.exampl.npcplugin_shahed.manager.AirdropManager;
+import org.exampl.npcplugin_shahed.manager.PresetManager;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.*;
+
+public class AirdropNpcGUI implements Listener {
+
+    private final CustomNPC plugin;
+    private final AirdropManager airdropManager;
+    private final PresetManager presetManager;
+
+    private final String TYPE_MENU = "§6§lВыбери тип аирдропа";
+    private final String PRESET_MENU = "§e§lВыбери пресет NPC";
+
+    private final Map<UUID, String> selectingForType = new HashMap<>();
+
+    public AirdropNpcGUI(CustomNPC plugin, AirdropManager airdropManager, PresetManager presetManager) {
+        this.plugin = plugin;
+        this.airdropManager = airdropManager;
+        this.presetManager = presetManager;
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void openTypeMenu(Player player) {
+        Inventory inv = Bukkit.createInventory(null, 27, TYPE_MENU);
+
+        String commonPreset = airdropManager.getNpcPreset("common");
+        String rarePreset = airdropManager.getNpcPreset("rare");
+        String legendaryPreset = airdropManager.getNpcPreset("legendary");
+
+        ItemStack common = createItem(Material.IRON_INGOT, "§7§lОбычный аирдроп",
+                Arrays.asList(
+                        "§7Текущий пресет: §f" + (commonPreset != null ? commonPreset : "Нет"),
+                        "",
+                        "§eНажми чтобы выбрать пресет"
+                ));
+        inv.setItem(11, common);
+
+        ItemStack rare = createItem(Material.GOLD_INGOT, "§9§lРедкий аирдроп",
+                Arrays.asList(
+                        "§7Текущий пресет: §f" + (rarePreset != null ? rarePreset : "Нет"),
+                        "",
+                        "§eНажми чтобы выбрать пресет"
+                ));
+        inv.setItem(13, rare);
+
+        ItemStack legendary = createItem(Material.DIAMOND, "§6§lЛегендарный аирдроп",
+                Arrays.asList(
+                        "§7Текущий пресет: §f" + (legendaryPreset != null ? legendaryPreset : "Нет"),
+                        "",
+                        "§eНажми чтобы выбрать пресет"
+                ));
+        inv.setItem(15, legendary);
+
+        ItemStack filler = createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        for (int i = 0; i < 27; i++) {
+            if (inv.getItem(i) == null) inv.setItem(i, filler);
+        }
+
+        player.openInventory(inv);
+    }
+
+    public void openPresetMenu(Player player, String airdropType) {
+        Inventory inv = Bukkit.createInventory(null, 54, PRESET_MENU);
+
+        selectingForType.put(player.getUniqueId(), airdropType);
+
+        // Собираем все пресеты
+        List<NPCPreset> allPresets = new ArrayList<>();
+        for (UUID playerId : presetManager.getAllPlayerIds()) {
+            allPresets.addAll(presetManager.getPresets(playerId));
+        }
+
+        // Также добавляем пресеты текущего игрока
+        allPresets.addAll(presetManager.getPresets(player.getUniqueId()));
+
+        // Убираем дубликаты по имени
+        Set<String> addedNames = new HashSet<>();
+        int slot = 0;
+        for (NPCPreset preset : allPresets) {
+            if (slot >= 45) break;
+            if (addedNames.contains(preset.getName())) continue;
+            addedNames.add(preset.getName());
+
+            ItemStack item = createItem(Material.ZOMBIE_HEAD, "§e" + preset.getName(),
+                    Arrays.asList(
+                            "§7Имя: §f" + preset.getDisplayName(),
+                            "§7Моб: §f" + preset.getMobType(),
+                            "§7HP: §c" + preset.getHealth(),
+                            "§7Скорость: §b" + preset.getSpeed(),
+                            "",
+                            "§aНажми чтобы выбрать"
+                    ));
+            inv.setItem(slot++, item);
+        }
+
+        if (allPresets.isEmpty()) {
+            ItemStack noPresets = createItem(Material.BARRIER, "§cНет пресетов",
+                    Collections.singletonList("§7Сначала создай пресет: /npc saves"));
+            inv.setItem(22, noPresets);
+        }
+
+        // Кнопка убрать пресет
+        ItemStack removeBtn = createItem(Material.BARRIER, "§c§lУбрать пресет",
+                Collections.singletonList("§7Не использовать пресет для этого типа"));
+        inv.setItem(49, removeBtn);
+
+        // Кнопка назад
+        ItemStack back = createItem(Material.ARROW, "§c§lНазад", null);
+        inv.setItem(45, back);
+
+        ItemStack filler = createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        for (int i = 45; i < 54; i++) {
+            if (inv.getItem(i) == null) inv.setItem(i, filler);
+        }
+
+        player.openInventory(inv);
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        Player player = (Player) event.getWhoClicked();
+        String title = event.getView().getTitle();
+
+        if (title.equals(TYPE_MENU)) {
+            event.setCancelled(true);
+
+            String type = null;
+            switch (event.getSlot()) {
+                case 11: type = "common"; break;
+                case 13: type = "rare"; break;
+                case 15: type = "legendary"; break;
+            }
+
+            if (type != null) {
+                player.closeInventory();
+                String finalType = type;
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openPresetMenu(player, finalType), 1L);
+            }
+        } else if (title.equals(PRESET_MENU)) {
+            event.setCancelled(true);
+
+            int slot = event.getSlot();
+            String airdropType = selectingForType.get(player.getUniqueId());
+
+            if (slot == 45) { // Назад
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openTypeMenu(player), 1L);
+            } else if (slot == 49) { // Убрать
+                if (airdropType != null) {
+                    airdropManager.setNpcPreset(airdropType, null);
+                    player.sendMessage("§cПресет для §e" + airdropType + " §cубран!");
+                }
+                player.closeInventory();
+            } else if (slot < 45) {
+                ItemStack item = event.getCurrentItem();
+                if (item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+                    String presetName = item.getItemMeta().getDisplayName().substring(2); // Убираем §e
+
+                    if (airdropType != null) {
+                        airdropManager.setNpcPreset(airdropType, presetName);
+                        player.sendMessage("§aПресет §e" + presetName + " §aустановлен для §e" + airdropType + "§a!");
+                    }
+                    player.closeInventory();
+                }
+            }
+        }
+    }
+
+    private ItemStack createItem(Material material, String name, List<String> lore) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(name);
+            if (lore != null) meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+}
+
+
+PresetGUI:
+
+package org.exampl.npcplugin_shahed.gui;
+
+import org.exampl.npcplugin_shahed.CustomNPC;
+import org.exampl.npcplugin_shahed.data.NPCPreset;
+import org.exampl.npcplugin_shahed.manager.NPCManager;
+import org.exampl.npcplugin_shahed.manager.PresetManager;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.*;
+
+public class PresetGUI implements Listener {
+
+    private final CustomNPC plugin;
+    private final PresetManager presetManager;
+    private final NPCManager npcManager;
+    private final AbilityGUI abilityGUI;
+
+    private final String MAIN_MENU_TITLE = "§6§lNPC Пресеты";
+    private final String SAVE_MENU_TITLE = "§a§lСохранить пресет";
+    private final String LOAD_MENU_TITLE = "§b§lЗагрузить пресет";
+    private final String DELETE_MENU_TITLE = "§c§lУдалить пресет";
+    private final String ABILITY_SELECT_TITLE = "§d§lВыбери пресет для способностей";
+
+    private final Set<UUID> playersInSaveMode = new HashSet<>();
+    private final Set<UUID> playersInLoadMode = new HashSet<>();
+    private final Set<UUID> playersInDeleteMode = new HashSet<>();
+    private final Set<UUID> playersInAbilitySelectMode = new HashSet<>();
+
+    public PresetGUI(CustomNPC plugin, PresetManager presetManager, NPCManager npcManager, AbilityGUI abilityGUI) {
+        this.plugin = plugin;
+        this.presetManager = presetManager;
+        this.npcManager = npcManager;
+        this.abilityGUI = abilityGUI;
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void openMainMenu(Player player) {
+        Inventory inv = Bukkit.createInventory(null, 36, MAIN_MENU_TITLE);
+
+        ItemStack saveItem = createItem(Material.EMERALD_BLOCK, "§a§lСохранить пресет",
+                Arrays.asList("§7Сохранить настройки", "§7ближайшего NPC как пресет",
+                        "", "§eНажми чтобы сохранить"));
+        inv.setItem(11, saveItem);
+
+        ItemStack loadItem = createItem(Material.DIAMOND_BLOCK, "§b§lЗагрузить пресет",
+                Arrays.asList("§7Применить сохраненный пресет", "§7к ближайшему NPC",
+                        "", "§eНажми чтобы загрузить"));
+        inv.setItem(13, loadItem);
+
+        ItemStack deleteItem = createItem(Material.REDSTONE_BLOCK, "§c§lУдалить пресет",
+                Arrays.asList("§7Удалить сохраненный пресет",
+                        "", "§eНажми чтобы удалить"));
+        inv.setItem(15, deleteItem);
+
+        // НОВОЕ: Кнопка способностей
+        ItemStack abilityItem = createItem(Material.BLAZE_POWDER, "§d§lСпособности",
+                Arrays.asList("§7Настроить способности NPC:",
+                        "§c• TNT взрыв",
+                        "§e• Молния",
+                        "§b• Подброс игрока",
+                        "",
+                        "§eНажми чтобы настроить"));
+        inv.setItem(22, abilityItem);
+
+        int presetCount = presetManager.getPresetCount(player.getUniqueId());
+        int maxPresets = presetManager.getMaxPresets();
+        ItemStack infoItem = createItem(Material.BOOK, "§e§lИнформация",
+                Arrays.asList("§7Ваши пресеты: §f" + presetCount + "/" + maxPresets,
+                        "", "§7Используйте пресеты для",
+                        "§7быстрого создания NPC"));
+        inv.setItem(31, infoItem);
+
+        ItemStack filler = createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        for (int i = 0; i < 36; i++) {
+            if (inv.getItem(i) == null) {
+                inv.setItem(i, filler);
+            }
+        }
+
+        player.openInventory(inv);
+    }
+
+    public void openAbilitySelectMenu(Player player) {
+        Inventory inv = Bukkit.createInventory(null, 36, ABILITY_SELECT_TITLE);
+
+        List<NPCPreset> presets = presetManager.getPresets(player.getUniqueId());
+
+        if (presets.isEmpty()) {
+            ItemStack noPresets = createItem(Material.BARRIER, "§c§lНет пресетов",
+                    Collections.singletonList("§7Сначала сохраните пресет"));
+            inv.setItem(13, noPresets);
+        } else {
+            for (int i = 0; i < presets.size() && i < 20; i++) {
+                NPCPreset preset = presets.get(i);
+                boolean hasAbilities = preset.getAbilities().hasAnyAbility();
+
+                ItemStack item = createItem(
+                        hasAbilities ? Material.ENCHANTED_BOOK : Material.BOOK,
+                        "§d" + preset.getName(),
+                        Arrays.asList(
+                                "§7Имя NPC: §f" + preset.getDisplayName(),
+                                "",
+                                hasAbilities ? "§aСпособности настроены" : "§7Нет способностей",
+                                "",
+                                "§eНажми чтобы настроить"
+                        ));
+                inv.setItem(i, item);
+            }
+        }
+
+        ItemStack back = createItem(Material.ARROW, "§c§lНазад",
+                Collections.singletonList("§7Вернуться в главное меню"));
+        inv.setItem(31, back);
+
+        ItemStack filler = createItem(Material.MAGENTA_STAINED_GLASS_PANE, " ", null);
+        for (int i = 27; i < 36; i++) {
+            if (inv.getItem(i) == null) {
+                inv.setItem(i, filler);
+            }
+        }
+
+        playersInAbilitySelectMode.add(player.getUniqueId());
+        player.openInventory(inv);
+    }
+
+    public void openSaveMenu(Player player) {
+        Inventory inv = Bukkit.createInventory(null, 36, SAVE_MENU_TITLE);
+
+        List<NPCPreset> presets = presetManager.getPresets(player.getUniqueId());
+        int maxPresets = presetManager.getMaxPresets();
+
+        for (int i = 0; i < presets.size() && i < 20; i++) {
+            NPCPreset preset = presets.get(i);
+            ItemStack item = createItem(Material.CHEST, "§e" + preset.getName(),
+                    Arrays.asList("§7Имя NPC: §f" + preset.getDisplayName(),
+                            "§7HP: §c" + preset.getHealth(),
+                            "§7Скорость: §b" + preset.getSpeed(),
+                            "", "§eНажми чтобы перезаписать"));
+            inv.setItem(i, item);
+        }
+
+        if (presets.size() < maxPresets) {
+            ItemStack newSlot = createItem(Material.LIME_STAINED_GLASS_PANE, "§a§l+ Новый пресет",
+                    Arrays.asList("§7Нажми чтобы сохранить", "§7текущего NPC как новый пресет"));
+            inv.setItem(presets.size(), newSlot);
+        }
+
+        ItemStack back = createItem(Material.ARROW, "§c§lНазад",
+                Collections.singletonList("§7Вернуться в главное меню"));
+        inv.setItem(31, back);
+
+        ItemStack filler = createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        for (int i = 27; i < 36; i++) {
+            if (inv.getItem(i) == null) {
+                inv.setItem(i, filler);
+            }
+        }
+
+        playersInSaveMode.add(player.getUniqueId());
+        player.openInventory(inv);
+    }
+
+    public void openLoadMenu(Player player) {
+        Inventory inv = Bukkit.createInventory(null, 36, LOAD_MENU_TITLE);
+
+        List<NPCPreset> presets = presetManager.getPresets(player.getUniqueId());
+
+        if (presets.isEmpty()) {
+            ItemStack noPresets = createItem(Material.BARRIER, "§c§lНет пресетов",
+                    Collections.singletonList("§7Сначала сохраните пресет"));
+            inv.setItem(13, noPresets);
+        } else {
+            for (int i = 0; i < presets.size() && i < 20; i++) {
+                NPCPreset preset = presets.get(i);
+                ItemStack item = createItem(Material.ENDER_CHEST, "§b" + preset.getName(),
+                        Arrays.asList("§7Имя NPC: §f" + preset.getDisplayName(),
+                                "§7HP: §c" + preset.getHealth(),
+                                "§7Скорость: §b" + preset.getSpeed(),
+                                "§7Агрессия: §e" + preset.getAggroMode(),
+                                "", "§eНажми чтобы применить"));
+                inv.setItem(i, item);
+            }
+        }
+
+        ItemStack back = createItem(Material.ARROW, "§c§lНазад",
+                Collections.singletonList("§7Вернуться в главное меню"));
+        inv.setItem(31, back);
+
+        ItemStack filler = createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        for (int i = 27; i < 36; i++) {
+            if (inv.getItem(i) == null) {
+                inv.setItem(i, filler);
+            }
+        }
+
+        playersInLoadMode.add(player.getUniqueId());
+        player.openInventory(inv);
+    }
+
+    public void openDeleteMenu(Player player) {
+        Inventory inv = Bukkit.createInventory(null, 36, DELETE_MENU_TITLE);
+
+        List<NPCPreset> presets = presetManager.getPresets(player.getUniqueId());
+
+        if (presets.isEmpty()) {
+            ItemStack noPresets = createItem(Material.BARRIER, "§c§lНет пресетов",
+                    Collections.singletonList("§7Нечего удалять"));
+            inv.setItem(13, noPresets);
+        } else {
+            for (int i = 0; i < presets.size() && i < 20; i++) {
+                NPCPreset preset = presets.get(i);
+                ItemStack item = createItem(Material.TNT, "§c" + preset.getName(),
+                        Arrays.asList("§7Имя NPC: §f" + preset.getDisplayName(),
+                                "§7HP: §c" + preset.getHealth(),
+                                "", "§c§lНажми чтобы УДАЛИТЬ"));
+                inv.setItem(i, item);
+            }
+        }
+
+        ItemStack back = createItem(Material.ARROW, "§c§lНазад",
+                Collections.singletonList("§7Вернуться в главное меню"));
+        inv.setItem(31, back);
+
+        ItemStack filler = createItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        for (int i = 27; i < 36; i++) {
+            if (inv.getItem(i) == null) {
+                inv.setItem(i, filler);
+            }
+        }
+
+        playersInDeleteMode.add(player.getUniqueId());
+        player.openInventory(inv);
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        Player player = (Player) event.getWhoClicked();
+        String title = event.getView().getTitle();
+
+        if (title.equals(MAIN_MENU_TITLE)) {
+            event.setCancelled(true);
+            handleMainMenuClick(player, event.getSlot());
+        } else if (title.equals(SAVE_MENU_TITLE)) {
+            event.setCancelled(true);
+            handleSaveMenuClick(player, event.getSlot());
+        } else if (title.equals(LOAD_MENU_TITLE)) {
+            event.setCancelled(true);
+            handleLoadMenuClick(player, event.getSlot());
+        } else if (title.equals(DELETE_MENU_TITLE)) {
+            event.setCancelled(true);
+            handleDeleteMenuClick(player, event.getSlot());
+        } else if (title.equals(ABILITY_SELECT_TITLE)) {
+            event.setCancelled(true);
+            handleAbilitySelectClick(player, event.getSlot());
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player)) return;
+        Player player = (Player) event.getPlayer();
+        UUID playerId = player.getUniqueId();
+
+        playersInSaveMode.remove(playerId);
+        playersInLoadMode.remove(playerId);
+        playersInDeleteMode.remove(playerId);
+        playersInAbilitySelectMode.remove(playerId);
+    }
+
+    private void handleMainMenuClick(Player player, int slot) {
+        switch (slot) {
+            case 11:
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openSaveMenu(player), 1L);
+                break;
+            case 13:
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openLoadMenu(player), 1L);
+                break;
+            case 15:
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openDeleteMenu(player), 1L);
+                break;
+            case 22: // Способности
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> openAbilitySelectMenu(player), 1L);
+                break;
+        }
+    }
+
+    private void handleAbilitySelectClick(Player player, int slot) {
+        if (slot == 31) {
+            player.closeInventory();
+            Bukkit.getScheduler().runTaskLater(plugin, () -> openMainMenu(player), 1L);
+            return;
+        }
+
+        if (slot >= 0 && slot < 20) {
+            NPCPreset preset = presetManager.getPreset(player.getUniqueId(), slot);
+            if (preset != null) {
+                player.closeInventory();
+                Bukkit.getScheduler().runTaskLater(plugin, () ->
+                        abilityGUI.openAbilityMenu(player, preset.getName()), 1L);
+            }
+        }
+    }
+
+    private void handleSaveMenuClick(Player player, int slot) {
+        if (slot == 31) {
+            player.closeInventory();
+            Bukkit.getScheduler().runTaskLater(plugin, () -> openMainMenu(player), 1L);
+            return;
+        }
+
+        if (slot >= 0 && slot < 20) {
+            LivingEntity npc = npcManager.getNearestNPC(player);
+            if (npc == null) {
+                player.sendMessage("§cРядом нет NPC для сохранения!");
+                player.closeInventory();
+                return;
+            }
+
+            String presetName = "Пресет_" + (slot + 1);
+            NPCPreset existingPreset = presetManager.getPreset(player.getUniqueId(), slot);
+            if (existingPreset != null) {
+                presetName = existingPreset.getName();
+            }
+
+            NPCPreset preset = createPresetFromNPC(npc, presetName);
+
+            if (presetManager.savePreset(player.getUniqueId(), preset)) {
+                player.sendMessage("§aПресет §e" + presetName + " §aсохранен!");
+            } else {
+                player.sendMessage("§cДостигнут лимит пресетов (20)!");
+            }
+
+            player.closeInventory();
+        }
+    }
+
+    private void handleLoadMenuClick(Player player, int slot) {
+        if (slot == 31) {
+            player.closeInventory();
+            Bukkit.getScheduler().runTaskLater(plugin, () -> openMainMenu(player), 1L);
+            return;
+        }
+
+        if (slot >= 0 && slot < 20) {
+            NPCPreset preset = presetManager.getPreset(player.getUniqueId(), slot);
+            if (preset == null) {
+                return;
+            }
+
+            LivingEntity npc = npcManager.getNearestNPC(player);
+            if (npc == null) {
+                player.sendMessage("§cРядом нет NPC!");
+                player.closeInventory();
+                return;
+            }
+
+            applyPresetToNPC(npc, preset);
+            player.sendMessage("§aПресет §e" + preset.getName() + " §aприменен к NPC!");
+            player.closeInventory();
+        }
+    }
+
+    private void handleDeleteMenuClick(Player player, int slot) {
+        if (slot == 31) {
+            player.closeInventory();
+            Bukkit.getScheduler().runTaskLater(plugin, () -> openMainMenu(player), 1L);
+            return;
+        }
+
+        if (slot >= 0 && slot < 20) {
+            NPCPreset preset = presetManager.getPreset(player.getUniqueId(), slot);
+            if (preset == null) {
+                return;
+            }
+
+            if (presetManager.deletePreset(player.getUniqueId(), preset.getName())) {
+                player.sendMessage("§cПресет §e" + preset.getName() + " §cудален!");
+            }
+
+            player.closeInventory();
+            Bukkit.getScheduler().runTaskLater(plugin, () -> openDeleteMenu(player), 1L);
+        }
+    }
+
+    private NPCPreset createPresetFromNPC(LivingEntity npc, String name) {
+        NPCPreset preset = new NPCPreset(name);
+
+        preset.setDisplayName(npc.getCustomName() != null ? npc.getCustomName() : "NPC");
+        preset.setHealth(npc.getHealth());
+
+        if (npc.getAttribute(Attribute.MOVEMENT_SPEED) != null) {
+            preset.setSpeed(npc.getAttribute(Attribute.MOVEMENT_SPEED).getBaseValue());
+        }
+
+        if (npc.getEquipment() != null) {
+            preset.setWeapon(npc.getEquipment().getItemInMainHand());
+            preset.setOffHand(npc.getEquipment().getItemInOffHand());
+            preset.setHelmet(npc.getEquipment().getHelmet());
+            preset.setChestplate(npc.getEquipment().getChestplate());
+            preset.setLeggings(npc.getEquipment().getLeggings());
+            preset.setBoots(npc.getEquipment().getBoots());
+        }
+
+        return preset;
+    }
+
+    private void applyPresetToNPC(LivingEntity npc, NPCPreset preset) {
+        UUID npcId = npc.getUniqueId();
+
+        npcManager.setNPCName(npcId, preset.getDisplayName());
+        npcManager.setNPCHealth(npcId, preset.getHealth());
+        npcManager.setNPCSpeed(npcId, preset.getSpeed());
+
+        if (preset.getWeapon() != null) {
+            npcManager.setNPCWeapon(npcId, preset.getWeapon());
+        }
+        if (preset.getOffHand() != null) {
+            npcManager.setNPCOffHand(npcId, preset.getOffHand());
+        }
+
+        npcManager.setNPCArmor(npcId,
+                preset.getHelmet(),
+                preset.getChestplate(),
+                preset.getLeggings(),
+                preset.getBoots());
+
+        if (preset.getAggroMode() != null) {
+            npcManager.setAggroMode(npcId, preset.getAggroMode());
+        }
+    }
+
+    private ItemStack createItem(Material material, String name, List<String> lore) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(name);
+            if (lore != null) {
+                meta.setLore(lore);
+            }
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+}
+
+
+AirdropManager:
+
+package org.exampl.npcplugin_shahed.manager;
+
+import org.exampl.npcplugin_shahed.CustomNPC;
+import org.exampl.npcplugin_shahed.data.AirdropLoot;
+import org.exampl.npcplugin_shahed.data.NPCAbilities;
+import org.exampl.npcplugin_shahed.data.NPCPreset;
+import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Block;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class AirdropManager implements Listener {
+
+    private final CustomNPC plugin;
+    private final Random random = new Random();
+
+    // Настройки мира
+    private World world;
+    private int centerX = 0;
+    private int centerZ = 0;
+    private int radius = 300;
+    private int intervalMinutes = 20;
+
+    // Количество охранников
+    private int commonGuardCount = 1;
+    private int rareGuardCount = 2;
+    private int legendaryGuardCount = 4;
+
+    // Текущее состояние аирдропа
+    private Location currentLocation = null;
+    private Block currentShulkerBlock = null;
+    private boolean isActive = false;
+    private String currentType = null;
+    private int secondsLeft = 0;
+
+    // Таски
+    private BukkitTask timerTask;
+    private BukkitTask abilityTask;
+
+    // Блоки маяка
+    private Location beaconLoc = null;
+    private Location ironLoc = null;
+
+    // Охранники
+    private final List<LivingEntity> guards = new ArrayList<>();
+    private int totalGuardsSpawned = 0;
+    private final Map<String, String> npcPresets = new HashMap<>();
+    private final Map<UUID, NPCAbilities> guardAbilities = new ConcurrentHashMap<>();
+
+    // BossBar для каждого охранника (HP)
+    private final Map<UUID, BossBar> guardBossBars = new HashMap<>();
+
+    // Кулдауны способностей
+    private final Map<UUID, Long> lastTnt = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastLightning = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastLaunch = new ConcurrentHashMap<>();
+
+    // Конфигурация лута
+    private final Map<String, AirdropLoot> lootTypes = new LinkedHashMap<>();
+
+    public AirdropManager(CustomNPC plugin) {
+        this.plugin = plugin;
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+
+        initDefaultLoot();
+        loadConfig();
+        loadLootConfig();
+        startAbilityChecker();
+
+        if (world != null) {
+            startTimer();
+        }
+
+        plugin.getLogger().info("[Аирдроп] Менеджер загружен!");
+    }
+
+    // ========================================
+    // ИНИЦИАЛИЗАЦИЯ ЛУТА
+    // ========================================
+
+    private void initDefaultLoot() {
+        AirdropLoot common = new AirdropLoot("common", 60);
+        common.addItem(new ItemStack(Material.IRON_INGOT, 32));
+        common.addItem(new ItemStack(Material.GOLD_INGOT, 16));
+        common.addItem(new ItemStack(Material.DIAMOND, 5));
+        common.addItem(new ItemStack(Material.GOLDEN_APPLE, 4));
+        common.addItem(new ItemStack(Material.ENDER_PEARL, 8));
+        common.addItem(new ItemStack(Material.EXPERIENCE_BOTTLE, 32));
+        common.addItem(new ItemStack(Material.IRON_BLOCK, 10));
+        lootTypes.put("common", common);
+
+        AirdropLoot rare = new AirdropLoot("rare", 30);
+        rare.addItem(new ItemStack(Material.DIAMOND, 16));
+        rare.addItem(new ItemStack(Material.EMERALD, 32));
+        rare.addItem(new ItemStack(Material.GOLDEN_APPLE, 8));
+        rare.addItem(new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 2));
+        rare.addItem(new ItemStack(Material.NETHERITE_SCRAP, 4));
+        rare.addItem(new ItemStack(Material.TOTEM_OF_UNDYING, 1));
+        rare.addItem(new ItemStack(Material.DIAMOND_BLOCK, 6));
+        lootTypes.put("rare", rare);
+
+        AirdropLoot legendary = new AirdropLoot("legendary", 10);
+        legendary.addItem(new ItemStack(Material.NETHERITE_INGOT, 4));
+        legendary.addItem(new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 8));
+        legendary.addItem(new ItemStack(Material.TOTEM_OF_UNDYING, 2));
+        legendary.addItem(new ItemStack(Material.ELYTRA, 1));
+        legendary.addItem(new ItemStack(Material.DIAMOND_BLOCK, 8));
+        legendary.addItem(new ItemStack(Material.BEACON, 1));
+        legendary.addItem(new ItemStack(Material.NETHERITE_BLOCK, 3));
+        lootTypes.put("legendary", legendary);
+    }
+
+    // ========================================
+    // ТАЙМЕР
+    // ========================================
+
+    private void startTimer() {
+        if (timerTask != null) timerTask.cancel();
+        if (world == null) return;
+
+        secondsLeft = intervalMinutes * 60;
+
+        timerTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (isActive) return;
+                secondsLeft--;
+                if (secondsLeft <= 0) {
+                    spawnAirdrop();
+                    secondsLeft = intervalMinutes * 60;
+                }
+            }
+        }.runTaskTimer(plugin, 20L, 20L);
+    }
+
+    public String getFormattedTime() {
+        if (isActive) return "§a§lАКТИВЕН";
+        if (secondsLeft <= 0) return "§cНе запущен";
+        return String.format("§e%02d:%02d", secondsLeft / 60, secondsLeft % 60);
+    }
+
+    // ========================================
+    // СПАВН АИРДРОПА
+    // ========================================
+
+    private void spawnAirdrop() {
+        if (world == null) return;
+
+        Location loc = findSafeLocation();
+        if (loc == null) {
+            loc = new Location(world, centerX, world.getHighestBlockYAt(centerX, centerZ) + 1, centerZ);
+        }
+        spawn(loc);
+    }
+
+    public void forceSpawn() {
+        if (isActive) remove();
+        if (world == null) return;
+        spawnAirdrop();
+    }
+
+    public void forceSpawn(Player player) {
+        if (isActive) remove();
+        if (world == null) {
+            world = player.getWorld();
+            centerX = player.getLocation().getBlockX();
+            centerZ = player.getLocation().getBlockZ();
+            saveConfig();
+        }
+        spawnAirdrop();
+    }
+
+    public void spawnHere(Player player) {
+        if (isActive) remove();
+        world = player.getWorld();
+        Location loc = player.getLocation();
+        loc.setY(world.getHighestBlockYAt(loc.getBlockX(), loc.getBlockZ()) + 1);
+        spawn(loc);
+    }
+
+    private void spawn(Location loc) {
+        currentType = selectLootType();
+        currentLocation = loc.clone();
+        isActive = true;
+
+        loc.getChunk().load(true);
+
+        Material shulkerMat;
+        switch (currentType) {
+            case "rare": shulkerMat = Material.BLUE_SHULKER_BOX; break;
+            case "legendary": shulkerMat = Material.ORANGE_SHULKER_BOX; break;
+            default: shulkerMat = Material.WHITE_SHULKER_BOX; break;
+        }
+
+        currentShulkerBlock = loc.getBlock();
+        currentShulkerBlock.setType(shulkerMat);
+
+        placeBeacon(loc);
+        spawnGuards(loc, currentType);
+        announceSpawn(loc, lootTypes.get(currentType));
+    }
+
+    private String selectLootType() {
+        int total = 0;
+        for (AirdropLoot l : lootTypes.values()) total += l.getChance();
+        if (total <= 0) return "common";
+
+        int roll = random.nextInt(total);
+        int sum = 0;
+        for (Map.Entry<String, AirdropLoot> e : lootTypes.entrySet()) {
+            sum += e.getValue().getChance();
+            if (roll < sum) return e.getKey();
+        }
+        return "common";
+    }
+
+    private Location findSafeLocation() {
+        if (world == null) return null;
+
+        for (int i = 0; i < 50; i++) {
+            int x = centerX + random.nextInt(radius * 2) - radius;
+            int z = centerZ + random.nextInt(radius * 2) - radius;
+
+            world.getChunkAt(x >> 4, z >> 4).load(true);
+
+            int y = world.getHighestBlockYAt(x, z);
+            Location loc = new Location(world, x + 0.5, y + 1, z + 0.5);
+            Block below = loc.clone().subtract(0, 1, 0).getBlock();
+
+            if (below.getType().isSolid() &&
+                    below.getType() != Material.LAVA &&
+                    below.getType() != Material.WATER &&
+                    !below.getType().name().contains("LEAVES")) {
+                return loc;
+            }
+        }
+        return null;
+    }
+
+    private void remove() {
+        if (currentShulkerBlock != null && currentShulkerBlock.getType().toString().contains("SHULKER")) {
+            currentShulkerBlock.setType(Material.AIR);
+        }
+
+        removeBeacon();
+        removeGuards();
+
+        isActive = false;
+        currentLocation = null;
+        currentType = null;
+        currentShulkerBlock = null;
+        totalGuardsSpawned = 0;
+    }
+
+    public void removeAirdrop() {
+        if (isActive) remove();
+    }
+
+    // ========================================
+    // ДРОП ЛУТА
+    // ========================================
+
+    private void dropLoot(Location location) {
+        AirdropLoot loot = lootTypes.get(currentType);
+        if (loot == null) return;
+
+        List<ItemStack> items = loot.getItems();
+        if (items == null || items.isEmpty()) {
+            dropItem(location, new ItemStack(Material.DIAMOND, 10));
+            dropItem(location, new ItemStack(Material.GOLDEN_APPLE, 5));
+            return;
+        }
+
+        List<ItemStack> shuffled = new ArrayList<>(items);
+        Collections.shuffle(shuffled);
+
+        int count = Math.min(shuffled.size(), 5 + random.nextInt(5));
+        for (int i = 0; i < count; i++) {
+            ItemStack item = shuffled.get(i).clone();
+            if (item.getAmount() > 1) {
+                item.setAmount(1 + random.nextInt(item.getAmount()));
+            }
+            dropItem(location, item);
+        }
+    }
+
+    private void dropItem(Location location, ItemStack item) {
+        Location dropLoc = location.clone().add(0, 1, 0);
+        Item dropped = location.getWorld().dropItem(dropLoc, item);
+
+        double x = (random.nextDouble() - 0.5) * 0.3;
+        double y = 0.3 + random.nextDouble() * 0.2;
+        double z = (random.nextDouble() - 0.5) * 0.3;
+        dropped.setVelocity(new Vector(x, y, z));
+    }
+
+    // ========================================
+    // МАЯК
+    // ========================================
+
+    private void placeBeacon(Location loc) {
+        ironLoc = loc.clone().subtract(0, 2, 0);
+        beaconLoc = loc.clone().subtract(0, 1, 0);
+        ironLoc.getBlock().setType(Material.IRON_BLOCK);
+        beaconLoc.getBlock().setType(Material.BEACON);
+    }
+
+    private void removeBeacon() {
+        if (beaconLoc != null && beaconLoc.getBlock().getType() == Material.BEACON)
+            beaconLoc.getBlock().setType(Material.AIR);
+        if (ironLoc != null && ironLoc.getBlock().getType() == Material.IRON_BLOCK)
+            ironLoc.getBlock().setType(Material.AIR);
+        beaconLoc = null;
+        ironLoc = null;
+    }
+
+    // ========================================
+    // ОХРАННИКИ
+    // ========================================
+
+    private void spawnGuards(Location loc, String type) {
+        removeGuards();
+
+        int count;
+        switch (type) {
+            case "legendary": count = legendaryGuardCount; break;
+            case "rare": count = rareGuardCount; break;
+            default: count = commonGuardCount; break;
+        }
+
+        totalGuardsSpawned = count;
+
+        String presetName = npcPresets.get(type);
+        NPCPreset preset = findPreset(presetName);
+
+        for (int i = 0; i < count; i++) {
+            Location guardLoc = findGuardLocation(loc);
+            if (guardLoc == null) guardLoc = loc.clone().add(2 + i * 2, 0, 2);
+
+            LivingEntity guard = createGuard(guardLoc, preset, type);
+            if (guard != null) {
+                guards.add(guard);
+                if (preset != null && preset.getAbilities().hasAnyAbility()) {
+                    guardAbilities.put(guard.getUniqueId(), preset.getAbilities().copy());
+                }
+            }
+        }
+    }
+
+    private NPCPreset findPreset(String name) {
+        if (name == null) return null;
+        for (UUID id : plugin.getPresetManager().getAllPlayerIds()) {
+            NPCPreset p = plugin.getPresetManager().getPresetByName(id, name);
+            if (p != null) return p;
+        }
+        return null;
+    }
+
+    private Location findGuardLocation(Location center) {
+        for (int i = 0; i < 15; i++) {
+            double angle = random.nextDouble() * Math.PI * 2;
+            int dist = 3 + random.nextInt(6);
+            int x = center.getBlockX() + (int)(Math.cos(angle) * dist);
+            int z = center.getBlockZ() + (int)(Math.sin(angle) * dist);
+            int y = center.getWorld().getHighestBlockYAt(x, z);
+            Location loc = new Location(center.getWorld(), x + 0.5, y + 1, z + 0.5);
+            if (loc.getBlock().getType() == Material.AIR) return loc;
+        }
+        return null;
+    }
+
+    private LivingEntity createGuard(Location loc, NPCPreset preset, String type) {
+        String mobType = preset != null ? preset.getMobType() : "zombie";
+        LivingEntity entity;
+
+        switch (mobType.toLowerCase()) {
+            case "skeleton":
+                Skeleton sk = loc.getWorld().spawn(loc, Skeleton.class);
+                sk.setShouldBurnInDay(false);
+                entity = sk;
+                break;
+            case "wither_skeleton":
+            case "wither":
+                entity = loc.getWorld().spawn(loc, WitherSkeleton.class);
+                break;
+            case "piglin_brute":
+                entity = loc.getWorld().spawn(loc, PiglinBrute.class);
+                break;
+            default:
+                Zombie z = loc.getWorld().spawn(loc, Zombie.class);
+                z.setShouldBurnInDay(false);
+                z.setAdult();
+                entity = z;
+                break;
+        }
+
+        entity.setRemoveWhenFarAway(false);
+        entity.setPersistent(true);
+        entity.setCustomNameVisible(true);
+
+        if (preset != null) {
+            applyPreset(entity, preset);
+        } else {
+            applyDefaultStats(entity, type);
+        }
+
+        // Создаём BossBar для охранника
+        createGuardBossBar(entity);
+
+        return entity;
+    }
+
+    private void applyPreset(LivingEntity entity, NPCPreset preset) {
+        entity.setCustomName(preset.getDisplayName().replace("&", "§"));
+
+        if (entity.getAttribute(Attribute.MAX_HEALTH) != null) {
+            entity.getAttribute(Attribute.MAX_HEALTH).setBaseValue(preset.getHealth());
+            entity.setHealth(preset.getHealth());
+        }
+        if (entity.getAttribute(Attribute.MOVEMENT_SPEED) != null) {
+            entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(preset.getSpeed());
+        }
+
+        if (entity.getEquipment() != null) {
+            if (preset.getWeapon() != null) {
+                entity.getEquipment().setItemInMainHand(preset.getWeapon().clone());
+                entity.getEquipment().setItemInMainHandDropChance(0f);
+            }
+            if (preset.getHelmet() != null) {
+                entity.getEquipment().setHelmet(preset.getHelmet().clone());
+                entity.getEquipment().setHelmetDropChance(0f);
+            }
+            if (preset.getChestplate() != null) {
+                entity.getEquipment().setChestplate(preset.getChestplate().clone());
+                entity.getEquipment().setChestplateDropChance(0f);
+            }
+            if (preset.getLeggings() != null) {
+                entity.getEquipment().setLeggings(preset.getLeggings().clone());
+                entity.getEquipment().setLeggingsDropChance(0f);
+            }
+            if (preset.getBoots() != null) {
+                entity.getEquipment().setBoots(preset.getBoots().clone());
+                entity.getEquipment().setBootsDropChance(0f);
+            }
+        }
+    }
+
+    private void applyDefaultStats(LivingEntity entity, String type) {
+        AirdropLoot loot = lootTypes.get(type);
+        entity.setCustomName(loot.getColor() + "§lОхранник Аирдропа");
+
+        double health;
+        switch (type) {
+            case "legendary": health = 80; break;
+            case "rare": health = 50; break;
+            default: health = 30; break;
+        }
+
+        if (entity.getAttribute(Attribute.MAX_HEALTH) != null) {
+            entity.getAttribute(Attribute.MAX_HEALTH).setBaseValue(health);
+            entity.setHealth(health);
+        }
+    }
+
+    private void removeGuards() {
+        removeAllGuardBossBars();
+
+        for (LivingEntity g : guards) {
+            if (g != null && g.isValid()) g.remove();
+        }
+        guards.clear();
+        guardAbilities.clear();
+        lastTnt.clear();
+        lastLightning.clear();
+        lastLaunch.clear();
+    }
+
+    private void cleanupGuards() {
+        guards.removeIf(g -> g == null || !g.isValid() || g.isDead());
+    }
+
+    public int getAliveGuardsCount() {
+        cleanupGuards();
+        return guards.size();
+    }
+
+    public boolean hasAliveGuards() {
+        cleanupGuards();
+        return !guards.isEmpty();
+    }
+
+    // ========================================
+    // BOSS BAR ДЛЯ ОХРАННИКОВ (HP)
+    // ========================================
+
+    private void createGuardBossBar(LivingEntity guard) {
+        String name = guard.getCustomName() != null ? guard.getCustomName() : "§cОхранник";
+        double maxHealth = guard.getAttribute(Attribute.MAX_HEALTH).getValue();
+
+        BarColor color;
+        switch (currentType) {
+            case "legendary": color = BarColor.YELLOW; break;
+            case "rare": color = BarColor.BLUE; break;
+            default: color = BarColor.RED; break;
+        }
+
+        BossBar bossBar = Bukkit.createBossBar(
+                name + " §c❤ " + (int) guard.getHealth() + "/" + (int) maxHealth,
+                color,
+                BarStyle.SOLID
+        );
+
+        bossBar.setProgress(1.0);
+        bossBar.setVisible(true);
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            bossBar.addPlayer(player);
+        }
+
+        guardBossBars.put(guard.getUniqueId(), bossBar);
+    }
+
+    private void updateGuardBossBar(LivingEntity guard) {
+        BossBar bossBar = guardBossBars.get(guard.getUniqueId());
+        if (bossBar == null) return;
+
+        double maxHealth = guard.getAttribute(Attribute.MAX_HEALTH).getValue();
+        double health = guard.getHealth();
+        double progress = health / maxHealth;
+
+        String name = guard.getCustomName() != null ? guard.getCustomName() : "§cОхранник";
+        bossBar.setTitle(name + " §c❤ " + (int) health + "/" + (int) maxHealth);
+        bossBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
+
+        if (progress > 0.5) {
+            bossBar.setColor(BarColor.GREEN);
+        } else if (progress > 0.25) {
+            bossBar.setColor(BarColor.YELLOW);
+        } else {
+            bossBar.setColor(BarColor.RED);
+        }
+    }
+
+    private void removeGuardBossBar(UUID guardId) {
+        BossBar bossBar = guardBossBars.remove(guardId);
+        if (bossBar != null) {
+            bossBar.setVisible(false);
+            bossBar.removeAll();
+        }
+    }
+
+    private void removeAllGuardBossBars() {
+        for (BossBar bossBar : guardBossBars.values()) {
+            bossBar.setVisible(false);
+            bossBar.removeAll();
+        }
+        guardBossBars.clear();
+    }
+
+    // ========================================
+    // СПОСОБНОСТИ
+    // ========================================
+
+    private void startAbilityChecker() {
+        if (abilityTask != null) abilityTask.cancel();
+
+        abilityTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (!isActive || guards.isEmpty()) return;
+
+                long now = System.currentTimeMillis();
+                for (LivingEntity guard : new ArrayList<>(guards)) {
+                    if (guard == null || !guard.isValid() || guard.isDead()) continue;
+
+                    NPCAbilities ab = guardAbilities.get(guard.getUniqueId());
+                    if (ab == null || !ab.hasAnyAbility()) continue;
+
+                    Player target = findNearestPlayer(guard, ab.getActivationRadius());
+                    if (target == null) continue;
+
+                    if (ab.isTntEnabled()) {
+                        long last = lastTnt.getOrDefault(guard.getUniqueId(), 0L);
+                        if (now - last >= ab.getTntInterval() * 1000L) {
+                            useTntAbility(guard, ab);
+                            lastTnt.put(guard.getUniqueId(), now);
+                        }
+                    }
+
+                    if (ab.isLightningEnabled()) {
+                        long last = lastLightning.getOrDefault(guard.getUniqueId(), 0L);
+                        if (now - last >= ab.getLightningInterval() * 1000L) {
+                            useLightningAbility(guard, target);
+                            lastLightning.put(guard.getUniqueId(), now);
+                        }
+                    }
+
+                    if (ab.isLaunchEnabled()) {
+                        long last = lastLaunch.getOrDefault(guard.getUniqueId(), 0L);
+                        if (now - last >= ab.getLaunchInterval() * 1000L) {
+                            useLaunchAbility(target, ab.getLaunchHeight());
+                            lastLaunch.put(guard.getUniqueId(), now);
+                        }
+                    }
+                }
+            }
+        }.runTaskTimer(plugin, 20L, 20L);
+    }
+
+    private Player findNearestPlayer(LivingEntity npc, int radius) {
+        for (Entity e : npc.getNearbyEntities(radius, radius, radius)) {
+            if (e instanceof Player) {
+                Player p = (Player) e;
+                if (p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE) {
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void useTntAbility(LivingEntity guard, NPCAbilities ab) {
+        int count = ab.getTntMinCount() + random.nextInt(ab.getTntMaxCount() - ab.getTntMinCount() + 1);
+        guard.getWorld().playSound(guard.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 1f, 1f);
+
+        for (int i = 0; i < count; i++) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (!guard.isValid()) return;
+                TNTPrimed tnt = guard.getWorld().spawn(guard.getLocation().add(0, 1.5, 0), TNTPrimed.class);
+                double angle = random.nextDouble() * Math.PI * 2;
+                tnt.setVelocity(new Vector(Math.cos(angle) * 0.5, 0.5, Math.sin(angle) * 0.5));
+                tnt.setFuseTicks(40 + random.nextInt(20));
+            }, i * 5L);
+        }
+    }
+
+    private void useLightningAbility(LivingEntity guard, Player target) {
+        target.sendMessage("§e§l⚡ Молния!");
+        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.5f, 2f);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (target.isOnline()) target.getWorld().strikeLightning(target.getLocation());
+        }, 20L);
+    }
+
+    private void useLaunchAbility(Player target, int height) {
+        target.sendMessage("§b§l⬆ Подброс!");
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (target.isOnline()) {
+                target.setVelocity(new Vector(0, Math.min(Math.sqrt(0.2 * height), 4), 0));
+                target.playSound(target.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1f);
+            }
+        }, 10L);
+    }
+
+    // ========================================
+    // СОБЫТИЯ
+    // ========================================
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (!isActive || currentLocation == null) return;
+        if (event.getClickedBlock() == null) return;
+
+        Block clicked = event.getClickedBlock();
+        if (!clicked.getType().toString().contains("SHULKER")) return;
+        if (!isSameLocation(clicked.getLocation(), currentLocation)) return;
+
+        Player player = event.getPlayer();
+        event.setCancelled(true);
+
+        cleanupGuards();
+
+        if (hasAliveGuards()) {
+            player.sendMessage("§c§l✘ Убей охранников! §7(" + guards.size() + ")");
+            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+            return;
+        }
+
+        dropLoot(currentLocation);
+        player.playSound(currentLocation, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+        handleAirdropTaken(player);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockBreak(BlockBreakEvent event) {
+        if (!isActive || currentLocation == null) return;
+        if (!event.getBlock().getType().toString().contains("SHULKER")) return;
+        if (!isSameLocation(event.getBlock().getLocation(), currentLocation)) return;
+
+        Player player = event.getPlayer();
+        event.setCancelled(true);
+
+        cleanupGuards();
+
+        if (hasAliveGuards()) {
+            player.sendMessage("§c§l✘ Убей охранников! §7(" + guards.size() + ")");
+            return;
+        }
+
+        dropLoot(currentLocation);
+        handleAirdropTaken(player);
+    }
+
+    @EventHandler
+    public void onGuardDamage(EntityDamageEvent event) {
+        if (!isActive) return;
+        if (!(event.getEntity() instanceof LivingEntity)) return;
+
+        LivingEntity entity = (LivingEntity) event.getEntity();
+        if (!guards.contains(entity)) return;
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (entity.isValid() && !entity.isDead()) {
+                updateGuardBossBar(entity);
+            }
+        }, 1L);
+    }
+
+    @EventHandler
+    public void onGuardDeath(EntityDeathEvent event) {
+        if (!isActive) return;
+
+        LivingEntity entity = event.getEntity();
+        if (!guards.contains(entity)) return;
+
+        removeGuardBossBar(entity.getUniqueId());
+        guards.remove(entity);
+        guardAbilities.remove(entity.getUniqueId());
+
+        event.getDrops().clear();
+        event.setDroppedExp(10 + random.nextInt(20));
+
+        if (guards.isEmpty()) {
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                p.sendMessage("§6§l[АИРДРОП] §aОхранники убиты! Забирай лут!");
+                p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (!isActive) return;
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Player player = event.getPlayer();
+            if (!player.isOnline()) return;
+
+            for (BossBar bossBar : guardBossBars.values()) {
+                bossBar.addPlayer(player);
+            }
+        }, 20L);
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        for (BossBar bossBar : guardBossBars.values()) {
+            bossBar.removePlayer(event.getPlayer());
+        }
+    }
+
+    private void handleAirdropTaken(Player player) {
+        AirdropLoot loot = lootTypes.get(currentType);
+        String name = loot != null ? loot.getDisplayName() : "§7Обычный";
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.sendMessage("§6§l[АИРДРОП] " + name + " §eзабрал §f" + player.getName());
+            p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
+        }
+
+        remove();
+        startTimer();
+    }
+
+    private boolean isSameLocation(Location a, Location b) {
+        return a.getWorld().equals(b.getWorld()) &&
+                a.getBlockX() == b.getBlockX() &&
+                a.getBlockY() == b.getBlockY() &&
+                a.getBlockZ() == b.getBlockZ();
+    }
+
+    private void announceSpawn(Location loc, AirdropLoot loot) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.sendMessage("");
+            p.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+            p.sendMessage(loot.getColor() + "§l  ⬇ " + loot.getDisplayName().substring(2).toUpperCase() + " АИРДРОП");
+            p.sendMessage("§6  X:" + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ());
+            if (!guards.isEmpty()) p.sendMessage("§6  Охранников: §c" + guards.size());
+            p.sendMessage("§6§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+            p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1f);
+            p.sendTitle(loot.getColor() + "§lАИРДРОП", "§eX:" + loc.getBlockX() + " Z:" + loc.getBlockZ(), 10, 70, 20);
+        }
+    }
+
+    // ========================================
+    // ПУБЛИЧНЫЕ МЕТОДЫ
+    // ========================================
+
+    public void setCenter(World w, int x, int z) {
+        this.world = w;
+        this.centerX = x;
+        this.centerZ = z;
+        saveConfig();
+        startTimer();
+    }
+
+    public void setInterval(int min) {
+        this.intervalMinutes = Math.max(1, min);
+        saveConfig();
+        if (!isActive) startTimer();
+    }
+
+    public void setGuardCount(String type, int count) {
+        count = Math.max(0, Math.min(10, count));
+        switch (type.toLowerCase()) {
+            case "legendary": legendaryGuardCount = count; break;
+            case "rare": rareGuardCount = count; break;
+            default: commonGuardCount = count; break;
+        }
+        saveConfig();
+    }
+
+    public void setNpcPreset(String type, String name) {
+        npcPresets.put(type.toLowerCase(), name);
+        saveConfig();
+    }
+
+    public void setLootChance(String type, int chance) {
+        AirdropLoot l = lootTypes.get(type.toLowerCase());
+        if (l != null) {
+            l.setChance(chance);
+            saveLootConfig();
+        }
+    }
+
+    public int getInterval() { return intervalMinutes; }
+    public Location getCurrentLocation() { return currentLocation; }
+    public boolean isAirdropActive() { return isActive; }
+    public boolean isTimerRunning() { return timerTask != null && !isActive; }
+    public String getCurrentLootType() { return currentType; }
+    public AirdropLoot getLoot(String type) { return lootTypes.get(type.toLowerCase()); }
+    public Map<String, AirdropLoot> getAllLoot() { return new HashMap<>(lootTypes); }
+    public String getNpcPreset(String type) { return npcPresets.get(type.toLowerCase()); }
+    public Map<String, String> getAllNpcPresets() { return new HashMap<>(npcPresets); }
+
+    public int getGuardCount(String type) {
+        switch (type.toLowerCase()) {
+            case "legendary": return legendaryGuardCount;
+            case "rare": return rareGuardCount;
+            default: return commonGuardCount;
+        }
+    }
+
+    // ========================================
+    // КОНФИГ
+    // ========================================
+
+    private void loadConfig() {
+        File f = new File(plugin.getDataFolder(), "airdrop.yml");
+        if (!f.exists()) { saveConfig(); return; }
+
+        FileConfiguration c = YamlConfiguration.loadConfiguration(f);
+        intervalMinutes = c.getInt("interval", 20);
+        centerX = c.getInt("centerX", 0);
+        centerZ = c.getInt("centerZ", 0);
+        radius = c.getInt("radius", 300);
+        commonGuardCount = c.getInt("guards.common", 1);
+        rareGuardCount = c.getInt("guards.rare", 2);
+        legendaryGuardCount = c.getInt("guards.legendary", 4);
+
+        String wName = c.getString("world");
+        if (wName != null) world = Bukkit.getWorld(wName);
+
+        if (c.contains("npcPresets")) {
+            for (String t : c.getConfigurationSection("npcPresets").getKeys(false)) {
+                npcPresets.put(t, c.getString("npcPresets." + t));
+            }
+        }
+    }
+
+    private void saveConfig() {
+        File f = new File(plugin.getDataFolder(), "airdrop.yml");
+        FileConfiguration c = YamlConfiguration.loadConfiguration(f);
+
+        c.set("interval", intervalMinutes);
+        c.set("centerX", centerX);
+        c.set("centerZ", centerZ);
+        c.set("radius", radius);
+        c.set("world", world != null ? world.getName() : null);
+        c.set("guards.common", commonGuardCount);
+        c.set("guards.rare", rareGuardCount);
+        c.set("guards.legendary", legendaryGuardCount);
+
+        for (Map.Entry<String, String> e : npcPresets.entrySet()) {
+            c.set("npcPresets." + e.getKey(), e.getValue());
+        }
+
+        try { c.save(f); } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    public void saveLootConfig() {
+        File f = new File(plugin.getDataFolder(), "airdrop_loot.yml");
+        FileConfiguration c = YamlConfiguration.loadConfiguration(f);
+
+        for (Map.Entry<String, AirdropLoot> e : lootTypes.entrySet()) {
+            c.set(e.getKey() + ".chance", e.getValue().getChance());
+            c.set(e.getKey() + ".items", e.getValue().getItems());
+        }
+
+        try { c.save(f); } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    private void loadLootConfig() {
+        File f = new File(plugin.getDataFolder(), "airdrop_loot.yml");
+        if (!f.exists()) { saveLootConfig(); return; }
+
+        FileConfiguration c = YamlConfiguration.loadConfiguration(f);
+        for (String t : lootTypes.keySet()) {
+            if (c.contains(t)) {
+                AirdropLoot l = lootTypes.get(t);
+                l.setChance(c.getInt(t + ".chance", l.getChance()));
+                List<?> items = c.getList(t + ".items");
+                if (items != null && !items.isEmpty()) {
+                    l.clearItems();
+                    for (Object o : items) {
+                        if (o instanceof ItemStack) l.addItem((ItemStack) o);
+                    }
+                }
+            }
+        }
+    }
+
+    public void shutdown() {
+        if (timerTask != null) timerTask.cancel();
+        if (abilityTask != null) abilityTask.cancel();
+        removeAllGuardBossBars();
+        removeGuards();
+        removeBeacon();
+    }
+}
+
+
+NPCManager:
+
+package org.exampl.npcplugin_shahed.manager;
+
+import org.exampl.npcplugin_shahed.CustomNPC;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
+import org.bukkit.entity.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.UUID;
+
+public class NPCManager implements Listener {
+
+    private final CustomNPC plugin;
+    private final Map<UUID, LivingEntity> npcs = new HashMap<>();
+    private final Map<UUID, String> npcAggroMode = new HashMap<>();
+    private final Map<UUID, BossBar> npcBossBars = new HashMap<>();
+
+    public NPCManager(CustomNPC plugin) {
+        this.plugin = plugin;
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+        startAggroTask();
+        startBossBarTask();
+    }
+
+    public LivingEntity spawnNPC(Location location, String mobType) {
+        LivingEntity entity;
+
+        switch (mobType.toLowerCase()) {
+            case "skeleton":
+                Skeleton skeleton = location.getWorld().spawn(location, Skeleton.class);
+                skeleton.setShouldBurnInDay(false);
+                skeleton.getEquipment().setItemInMainHand(null);
+                entity = skeleton;
+                break;
+            case "wither_skeleton":
+            case "witherskeleton":
+            case "wither":
+                WitherSkeleton witherSkeleton = location.getWorld().spawn(location, WitherSkeleton.class);
+                witherSkeleton.getEquipment().setItemInMainHand(null);
+                entity = witherSkeleton;
+                break;
+            case "zombie":
+            default:
+                Zombie zombie = location.getWorld().spawn(location, Zombie.class);
+                zombie.setShouldBurnInDay(false);
+                zombie.setAdult();
+                entity = zombie;
+                break;
+        }
+
+        entity.setCustomName("NPC");
+        entity.setCustomNameVisible(true);
+        entity.setRemoveWhenFarAway(false);
+        entity.setPersistent(true);
+
+        BossBar bossBar = Bukkit.createBossBar(
+                "§c§lNPC",
+                BarColor.RED,
+                BarStyle.SOLID
+        );
+        bossBar.setProgress(1.0);
+
+        npcs.put(entity.getUniqueId(), entity);
+        npcAggroMode.put(entity.getUniqueId(), "all");
+        npcBossBars.put(entity.getUniqueId(), bossBar);
+
+        return entity;
+    }
+
+    public boolean removeNPC(UUID npcId) {
+        LivingEntity npc = npcs.remove(npcId);
+        if (npc != null) {
+            npcAggroMode.remove(npcId);
+
+            BossBar bossBar = npcBossBars.remove(npcId);
+            if (bossBar != null) {
+                bossBar.removeAll();
+            }
+
+            npc.remove();
+            return true;
+        }
+        return false;
+    }
+
+    public void removeAllNPCs() {
+        for (LivingEntity npc : npcs.values()) {
+            npc.remove();
+        }
+        for (BossBar bossBar : npcBossBars.values()) {
+            bossBar.removeAll();
+        }
+        npcs.clear();
+        npcAggroMode.clear();
+        npcBossBars.clear();
+    }
+
+    public LivingEntity getNPC(UUID npcId) {
+        return npcs.get(npcId);
+    }
+
+    public LivingEntity getNearestNPC(Player player) {
+        LivingEntity nearest = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (LivingEntity npc : npcs.values()) {
+            if (npc.getWorld().equals(player.getWorld())) {
+                double distance = npc.getLocation().distance(player.getLocation());
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearest = npc;
+                }
+            }
+        }
+
+        return nearest;
+    }
+
+    public void setNPCName(UUID npcId, String name) {
+        LivingEntity npc = npcs.get(npcId);
+        if (npc != null) {
+            String coloredName = name.replace("&", "§");
+            npc.setCustomName(coloredName);
+            npc.setCustomNameVisible(true);
+
+            BossBar bossBar = npcBossBars.get(npcId);
+            if (bossBar != null) {
+                bossBar.setTitle(coloredName);
+            }
+        }
+    }
+
+    public void setNPCSpeed(UUID npcId, double speed) {
+        LivingEntity npc = npcs.get(npcId);
+        if (npc != null) {
+            if (npc.getAttribute(Attribute.MOVEMENT_SPEED) != null) {
+                npc.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speed);
+            }
+        }
+    }
+
+    public void setNPCHealth(UUID npcId, double health) {
+        LivingEntity npc = npcs.get(npcId);
+        if (npc != null) {
+            if (npc.getAttribute(Attribute.MAX_HEALTH) != null) {
+                npc.getAttribute(Attribute.MAX_HEALTH).setBaseValue(health);
+                npc.setHealth(health);
+                updateBossBar(npcId);
+            }
+        }
+    }
+
+    public void setNPCWeapon(UUID npcId, ItemStack weapon) {
+        LivingEntity npc = npcs.get(npcId);
+        if (npc != null && npc.getEquipment() != null) {
+            npc.getEquipment().setItemInMainHand(weapon.clone());
+            npc.getEquipment().setItemInMainHandDropChance(0.0f);
+        }
+    }
+
+    public void setNPCOffHand(UUID npcId, ItemStack item) {
+        LivingEntity npc = npcs.get(npcId);
+        if (npc != null && npc.getEquipment() != null) {
+            npc.getEquipment().setItemInOffHand(item.clone());
+            npc.getEquipment().setItemInOffHandDropChance(0.0f);
+        }
+    }
+
+    public void setNPCArmor(UUID npcId, ItemStack helmet, ItemStack chestplate,
+                            ItemStack leggings, ItemStack boots) {
+        LivingEntity npc = npcs.get(npcId);
+        if (npc != null && npc.getEquipment() != null) {
+            if (helmet != null) {
+                npc.getEquipment().setHelmet(helmet.clone());
+                npc.getEquipment().setHelmetDropChance(0.0f);
+            }
+            if (chestplate != null) {
+                npc.getEquipment().setChestplate(chestplate.clone());
+                npc.getEquipment().setChestplateDropChance(0.0f);
+            }
+            if (leggings != null) {
+                npc.getEquipment().setLeggings(leggings.clone());
+                npc.getEquipment().setLeggingsDropChance(0.0f);
+            }
+            if (boots != null) {
+                npc.getEquipment().setBoots(boots.clone());
+                npc.getEquipment().setBootsDropChance(0.0f);
+            }
+        }
+    }
+
+    public void setAggroMode(UUID npcId, String mode) {
+        npcAggroMode.put(npcId, mode);
+    }
+
+    public void setAggroPlayer(UUID npcId, UUID playerId) {
+        npcAggroMode.put(npcId, playerId.toString());
+    }
+
+    private void updateBossBar(UUID npcId) {
+        LivingEntity npc = npcs.get(npcId);
+        BossBar bossBar = npcBossBars.get(npcId);
+
+        if (npc != null && npc.isValid() && bossBar != null) {
+            double maxHealth = npc.getAttribute(Attribute.MAX_HEALTH).getBaseValue();
+            double currentHealth = npc.getHealth();
+            double progress = currentHealth / maxHealth;
+
+            bossBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
+
+            if (progress > 0.5) {
+                bossBar.setColor(BarColor.RED);
+            } else if (progress > 0.25) {
+                bossBar.setColor(BarColor.YELLOW);
+            } else {
+                bossBar.setColor(BarColor.RED);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onNPCDamage(EntityDamageEvent event) {
+        if (event.getEntity() instanceof LivingEntity) {
+            LivingEntity entity = (LivingEntity) event.getEntity();
+            if (npcs.containsKey(entity.getUniqueId())) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    updateBossBar(entity.getUniqueId());
+                }, 1L);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onNPCDeath(EntityDeathEvent event) {
+        LivingEntity entity = event.getEntity();
+        UUID npcId = entity.getUniqueId();
+
+        if (npcs.containsKey(npcId)) {
+            npcs.remove(npcId);
+            npcAggroMode.remove(npcId);
+
+            BossBar bossBar = npcBossBars.remove(npcId);
+            if (bossBar != null) {
+                bossBar.removeAll();
+            }
+
+            event.getDrops().clear();
+            event.setDroppedExp(0);
+        }
+    }
+
+    private void startBossBarTask() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Map.Entry<UUID, LivingEntity> entry : npcs.entrySet()) {
+                    UUID npcId = entry.getKey();
+                    LivingEntity npc = entry.getValue();
+                    BossBar bossBar = npcBossBars.get(npcId);
+
+                    if (npc == null || !npc.isValid() || bossBar == null) continue;
+
+                    bossBar.removeAll();
+
+                    for (Entity entity : npc.getNearbyEntities(32, 32, 32)) {
+                        if (entity instanceof Player) {
+                            bossBar.addPlayer((Player) entity);
+                        }
+                    }
+
+                    updateBossBar(npcId);
+                }
+            }
+        }.runTaskTimer(plugin, 0L, 10L);
+    }
+
+    private void startAggroTask() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Iterator<Map.Entry<UUID, LivingEntity>> iterator = npcs.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Map.Entry<UUID, LivingEntity> entry = iterator.next();
+                    UUID npcId = entry.getKey();
+                    LivingEntity npc = entry.getValue();
+
+                    if (!npc.isValid()) {
+                        BossBar bossBar = npcBossBars.remove(npcId);
+                        if (bossBar != null) bossBar.removeAll();
+                        iterator.remove();
+                        npcAggroMode.remove(npcId);
+                        continue;
+                    }
+
+                    String aggroMode = npcAggroMode.get(npcId);
+                    if (aggroMode == null) continue;
+
+                    if (aggroMode.equals("all")) {
+                        Player nearest = getNearestPlayer(npc, 16.0);
+                        if (nearest != null && npc instanceof Mob) {
+                            ((Mob) npc).setTarget(nearest);
+                        }
+                    } else if (!aggroMode.equals("none")) {
+                        try {
+                            UUID targetPlayerId = UUID.fromString(aggroMode);
+                            Player targetPlayer = Bukkit.getPlayer(targetPlayerId);
+                            if (targetPlayer != null && targetPlayer.isOnline()) {
+                                if (npc.getLocation().distance(targetPlayer.getLocation()) <= 50) {
+                                    if (npc instanceof Mob) {
+                                        ((Mob) npc).setTarget(targetPlayer);
+                                    }
+                                }
+                            }
+                        } catch (IllegalArgumentException ignored) {}
+                    }
+                }
+            }
+        }.runTaskTimer(plugin, 0L, 20L);
+    }
+
+    private Player getNearestPlayer(LivingEntity npc, double range) {
+        Player nearest = null;
+        double minDistance = range;
+
+        for (Entity entity : npc.getNearbyEntities(range, range, range)) {
+            if (entity instanceof Player) {
+                Player player = (Player) entity;
+                double distance = npc.getLocation().distance(player.getLocation());
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearest = player;
+                }
+            }
+        }
+
+        return nearest;
+    }
+
+    public Map<UUID, LivingEntity> getAllNPCs() {
+        return new HashMap<>(npcs);
+    }
+}
+
+
+PresetManager:
+
+package org.exampl.npcplugin_shahed.manager;
+
+import org.exampl.npcplugin_shahed.CustomNPC;
+import org.exampl.npcplugin_shahed.data.NPCAbilities;
+import org.exampl.npcplugin_shahed.data.NPCPreset;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
+public class PresetManager {
+
+    private final CustomNPC plugin;
+    private final Map<UUID, List<NPCPreset>> playerPresets = new HashMap<>();
+    private final File presetsFolder;
+    private final int MAX_PRESETS = 20;
+
+    public PresetManager(CustomNPC plugin) {
+        this.plugin = plugin;
+        this.presetsFolder = new File(plugin.getDataFolder(), "presets");
+        if (!presetsFolder.exists()) {
+            presetsFolder.mkdirs();
+        }
+        loadAllPresets();
+    }
+
+    public List<NPCPreset> getPresets(UUID playerId) {
+        return playerPresets.getOrDefault(playerId, new ArrayList<>());
+    }
+
+    public boolean savePreset(UUID playerId, NPCPreset preset) {
+        List<NPCPreset> presets = playerPresets.computeIfAbsent(playerId, k -> new ArrayList<>());
+
+        // Обновляем существующий или добавляем новый
+        boolean found = false;
+        for (int i = 0; i < presets.size(); i++) {
+            if (presets.get(i).getName().equals(preset.getName())) {
+                presets.set(i, preset);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            if (presets.size() >= MAX_PRESETS) {
+                return false;
+            }
+            presets.add(preset);
+        }
+
+        savePlayerPresets(playerId);
+        return true;
+    }
+
+    public boolean deletePreset(UUID playerId, String presetName) {
+        List<NPCPreset> presets = playerPresets.get(playerId);
+        if (presets != null) {
+            boolean removed = presets.removeIf(p -> p.getName().equals(presetName));
+            if (removed) {
+                savePlayerPresets(playerId);
+            }
+            return removed;
+        }
+        return false;
+    }
+
+    public NPCPreset getPreset(UUID playerId, String presetName) {
+        List<NPCPreset> presets = playerPresets.get(playerId);
+        if (presets != null) {
+            for (NPCPreset preset : presets) {
+                if (preset.getName().equals(presetName)) {
+                    return preset;
+                }
+            }
+        }
+        return null;
+    }
+
+    public NPCPreset getPreset(UUID playerId, int index) {
+        List<NPCPreset> presets = playerPresets.get(playerId);
+        if (presets != null && index >= 0 && index < presets.size()) {
+            return presets.get(index);
+        }
+        return null;
+    }
+
+    public int getPresetCount(UUID playerId) {
+        List<NPCPreset> presets = playerPresets.get(playerId);
+        return presets != null ? presets.size() : 0;
+    }
+
+    public int getMaxPresets() {
+        return MAX_PRESETS;
+    }
+
+    public Set<UUID> getAllPlayerIds() {
+        return playerPresets.keySet();
+    }
+
+    public NPCPreset getPresetByName(UUID playerId, String name) {
+        List<NPCPreset> presets = playerPresets.get(playerId);
+        if (presets != null) {
+            for (NPCPreset preset : presets) {
+                if (preset.getName().equalsIgnoreCase(name)) {
+                    return preset;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void savePlayerPresets(UUID playerId) {
+        File file = new File(presetsFolder, playerId.toString() + ".yml");
+        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+        List<NPCPreset> presets = playerPresets.get(playerId);
+
+        config.set("presets", null);
+
+        if (presets != null) {
+            for (int i = 0; i < presets.size(); i++) {
+                NPCPreset preset = presets.get(i);
+                String path = "presets." + i;
+
+                config.set(path + ".name", preset.getName());
+                config.set(path + ".displayName", preset.getDisplayName());
+                config.set(path + ".mobType", preset.getMobType());
+                config.set(path + ".health", preset.getHealth());
+                config.set(path + ".speed", preset.getSpeed());
+                config.set(path + ".aggroMode", preset.getAggroMode());
+                config.set(path + ".weapon", preset.getWeapon());
+                config.set(path + ".offHand", preset.getOffHand());
+                config.set(path + ".helmet", preset.getHelmet());
+                config.set(path + ".chestplate", preset.getChestplate());
+                config.set(path + ".leggings", preset.getLeggings());
+                config.set(path + ".boots", preset.getBoots());
+
+                // Сохраняем способности
+                NPCAbilities abilities = preset.getAbilities();
+                String abPath = path + ".abilities";
+                config.set(abPath + ".tntEnabled", abilities.isTntEnabled());
+                config.set(abPath + ".tntMinCount", abilities.getTntMinCount());
+                config.set(abPath + ".tntMaxCount", abilities.getTntMaxCount());
+                config.set(abPath + ".tntInterval", abilities.getTntInterval());
+                config.set(abPath + ".lightningEnabled", abilities.isLightningEnabled());
+                config.set(abPath + ".lightningInterval", abilities.getLightningInterval());
+                config.set(abPath + ".launchEnabled", abilities.isLaunchEnabled());
+                config.set(abPath + ".launchHeight", abilities.getLaunchHeight());
+                config.set(abPath + ".launchInterval", abilities.getLaunchInterval());
+                config.set(abPath + ".activationRadius", abilities.getActivationRadius());
+            }
+        }
+
+        try {
+            config.save(file);
+        } catch (IOException e) {
+            plugin.getLogger().severe("Не удалось сохранить пресеты для " + playerId);
+            e.printStackTrace();
+        }
+    }
+
+    private void loadAllPresets() {
+        File[] files = presetsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+        if (files == null) return;
+
+        for (File file : files) {
+            String fileName = file.getName().replace(".yml", "");
+            try {
+                UUID playerId = UUID.fromString(fileName);
+                loadPlayerPresets(playerId, file);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Неверный файл пресетов: " + fileName);
+            }
+        }
+    }
+
+    private void loadPlayerPresets(UUID playerId, File file) {
+        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        List<NPCPreset> presets = new ArrayList<>();
+
+        if (config.contains("presets")) {
+            for (String key : config.getConfigurationSection("presets").getKeys(false)) {
+                String path = "presets." + key;
+
+                String name = config.getString(path + ".name", "Preset");
+                NPCPreset preset = new NPCPreset(name);
+
+                preset.setDisplayName(config.getString(path + ".displayName", "NPC"));
+                preset.setMobType(config.getString(path + ".mobType", "zombie"));
+                preset.setHealth(config.getDouble(path + ".health", 20.0));
+                preset.setSpeed(config.getDouble(path + ".speed", 0.23));
+                preset.setAggroMode(config.getString(path + ".aggroMode", "all"));
+                preset.setWeapon(config.getItemStack(path + ".weapon"));
+                preset.setOffHand(config.getItemStack(path + ".offHand"));
+                preset.setHelmet(config.getItemStack(path + ".helmet"));
+                preset.setChestplate(config.getItemStack(path + ".chestplate"));
+                preset.setLeggings(config.getItemStack(path + ".leggings"));
+                preset.setBoots(config.getItemStack(path + ".boots"));
+
+                // Загружаем способности
+                String abPath = path + ".abilities";
+                if (config.contains(abPath)) {
+                    NPCAbilities abilities = preset.getAbilities();
+                    abilities.setTntEnabled(config.getBoolean(abPath + ".tntEnabled", false));
+                    abilities.setTntMinCount(config.getInt(abPath + ".tntMinCount", 2));
+                    abilities.setTntMaxCount(config.getInt(abPath + ".tntMaxCount", 4));
+                    abilities.setTntInterval(config.getInt(abPath + ".tntInterval", 15));
+                    abilities.setLightningEnabled(config.getBoolean(abPath + ".lightningEnabled", false));
+                    abilities.setLightningInterval(config.getInt(abPath + ".lightningInterval", 50));
+                    abilities.setLaunchEnabled(config.getBoolean(abPath + ".launchEnabled", false));
+                    abilities.setLaunchHeight(config.getInt(abPath + ".launchHeight", 30));
+                    abilities.setLaunchInterval(config.getInt(abPath + ".launchInterval", 60));
+                    abilities.setActivationRadius(config.getInt(abPath + ".activationRadius", 32));
+                }
+
+                presets.add(preset);
+            }
+        }
+
+        playerPresets.put(playerId, presets);
+    }
+}
+
+
+CustomNPC:
+
+package org.exampl.npcplugin_shahed;
+
+import org.exampl.npcplugin_shahed.commands.AirdropCommand;
+import org.exampl.npcplugin_shahed.commands.NPCCommand;
+import org.exampl.npcplugin_shahed.gui.AbilityGUI;
+import org.exampl.npcplugin_shahed.gui.AirdropGUI;
+import org.exampl.npcplugin_shahed.gui.AirdropNpcGUI;
+import org.exampl.npcplugin_shahed.gui.PresetGUI;
+import org.exampl.npcplugin_shahed.manager.AirdropManager;
+import org.exampl.npcplugin_shahed.manager.NPCManager;
+import org.exampl.npcplugin_shahed.manager.PresetManager;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
+
+public class CustomNPC extends JavaPlugin {
+
+    private static CustomNPC instance;
+    private NPCManager npcManager;
+    private PresetManager presetManager;
+    private PresetGUI presetGUI;
+    private AbilityGUI abilityGUI;
+    private AirdropManager airdropManager;
+    private AirdropGUI airdropGUI;
+    private AirdropNpcGUI airdropNpcGUI;
+
+    @Override
+    public void onEnable() {
+        instance = this;
+
+        try {
+            if (!getDataFolder().exists()) {
+                getDataFolder().mkdirs();
+            }
+
+            presetManager = new PresetManager(this);
+            npcManager = new NPCManager(this);
+            abilityGUI = new AbilityGUI(this, presetManager);
+            presetGUI = new PresetGUI(this, presetManager, npcManager, abilityGUI);
+            airdropManager = new AirdropManager(this);
+            airdropGUI = new AirdropGUI(this, airdropManager);
+            airdropNpcGUI = new AirdropNpcGUI(this, airdropManager, presetManager);
+
+            getCommand("npc").setExecutor(new NPCCommand(this, npcManager, presetGUI));
+
+            // Создаём команду и РЕГИСТРИРУЕМ КАК LISTENER!
+            AirdropCommand airdropCmd = new AirdropCommand(airdropManager, airdropGUI, airdropNpcGUI);
+
+            // Регистрируем события для GUI
+            Bukkit.getPluginManager().registerEvents(airdropCmd, this);
+
+            // Регистрируем команды
+            registerCommand("airdrop", airdropCmd);
+            registerCommand("airdropspawn", airdropCmd);
+            registerCommand("airdropspawnhere", airdropCmd);
+            registerCommand("airdropsettime", airdropCmd);
+            registerCommand("airdroptime", airdropCmd);
+            registerCommand("airdropinfo", airdropCmd);
+            registerCommand("airdropsetcenter", airdropCmd);
+            registerCommand("airdropchance", airdropCmd);
+            registerCommand("airdroploot", airdropCmd);
+            registerCommand("airdropsetnpc", airdropCmd);
+            registerCommand("airdropguards", airdropCmd);
+
+            getLogger().info("CustomNPC плагин запущен!");
+
+        } catch (Exception e) {
+            getLogger().severe("Ошибка при запуске плагина!");
+            e.printStackTrace();
+            getServer().getPluginManager().disablePlugin(this);
+        }
+    }
+
+    private void registerCommand(String name, Object executor) {
+        if (getCommand(name) != null) {
+            getCommand(name).setExecutor((CommandExecutor) executor);
+            if (executor instanceof TabCompleter) {
+                getCommand(name).setTabCompleter((TabCompleter) executor);
+            }
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        if (airdropManager != null) {
+            airdropManager.shutdown();
+        }
+        if (npcManager != null) {
+            npcManager.removeAllNPCs();
+        }
+        getLogger().info("CustomNPC плагин выключен!");
+    }
+
+    public static CustomNPC getInstance() {
+        return instance;
+    }
+
+    public PresetManager getPresetManager() {
+        return presetManager;
+    }
+
+    public NPCManager getNpcManager() {
+        return npcManager;
+    }
+
+    public AirdropManager getAirdropManager() {
+        return airdropManager;
+    }
+
+    public AbilityGUI getAbilityGUI() {
+        return abilityGUI;
+    }
+}
